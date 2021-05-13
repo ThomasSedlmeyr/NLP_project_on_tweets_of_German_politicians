@@ -8,8 +8,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.common import exceptions
 
-csvPath = "twitterData.csv"
-
 def create_webdriver_instance():
     driver = Chrome()
     return driver
@@ -39,9 +37,9 @@ def change_page_sort(tab_name, driver):
 
 
 def generate_tweet_id(tweet):
-    return ''.join(tweet)
+    return tweet[2]
 
-def scroll_completely(driver, scroll_attempt, num_seconds_to_load=0.2 , max_attempts=10):
+def scroll_completely(driver, scroll_attempt, num_seconds_to_load=0.4 , max_attempts=10):
     curr_position = driver.execute_script("return window.pageYOffset;")
     while True:
         last_position = curr_position
@@ -52,10 +50,9 @@ def scroll_completely(driver, scroll_attempt, num_seconds_to_load=0.2 , max_atte
             if scroll_attempt == max_attempts:
                 break
             else:
-                scroll_completely(driver, scroll_attempt + 1)
-        last_position = curr_position
+                scroll_attempt += 1
 
-def scroll_down_page(driver, last_position, num_seconds_to_load=0.3, scroll_attempt=0, max_attempts=100):
+def scroll_down_page(driver, last_position, scroll_attempt, num_seconds_to_load=1.5, max_attempts=3):
     """The function will try to scroll down the page and will check the current
     and last positions as an indicator. If the current and last positions are the same after `max_attempts`
     the assumption is that the end of the scroll region has been reached and the `end_of_scroll_region`
@@ -65,10 +62,10 @@ def scroll_down_page(driver, last_position, num_seconds_to_load=0.3, scroll_atte
     sleep(num_seconds_to_load)
     curr_position = driver.execute_script("return window.pageYOffset;")
     if curr_position == last_position:
-        if scroll_attempt < max_attempts:
+        if scroll_attempt == max_attempts:
             end_of_scroll_region = True
         else:
-            scroll_down_page(last_position, curr_position, scroll_attempt + 1)
+            return scroll_down_page(driver, curr_position, scroll_attempt + 1)
     last_position = curr_position
     print(end_of_scroll_region)
     return last_position, end_of_scroll_region
@@ -145,7 +142,8 @@ def extract_data_from_current_tweet_card(card):
     return tweet
 
 
-def main(url, filepath, minDate, age_sort='Latest'):
+def main(url, filepath, minDate):
+    save_tweet_data_to_csv(None, filepath, 'w')  # create file for saving records
     last_position = None
     end_of_scroll_region = False
     unique_tweets = set()
@@ -174,14 +172,14 @@ def main(url, filepath, minDate, age_sort='Latest'):
                 unique_tweets.add(tweet_id)
                 save_tweet_data_to_csv(tweet, filepath)
             else:
-                print("double processing")
+                #print("double processing")
                 continue
-            indexOfTime = tweet[2].find("T")
-            dateArr = tweet[2][:indexOfTime].split("-")
-            date = datetime.datetime(int(dateArr[0]), int(dateArr[1]), int(dateArr[2]))
-            if(date < minDate):
-                return
-        last_position, end_of_scroll_region = scroll_down_page(driver, last_position)
+            #indexOfTime = tweet[2].find("T")
+            #dateArr = tweet[2][:indexOfTime].split("-")
+            #date = datetime.datetime(int(dateArr[0]), int(dateArr[1]), int(dateArr[2]))
+            #if(date < minDate):
+                #return
+        last_position, end_of_scroll_region = scroll_down_page(driver, last_position, 0)
     driver.quit()
 
 def main2(url, filepath, minDate, age_sort='Latest'):
@@ -217,6 +215,8 @@ def main2(url, filepath, minDate, age_sort='Latest'):
             #date = datetime.datetime(int(dateArr[0]), int(dateArr[1]), int(dateArr[2]))
             #if(date < minDate):
                 #return
+    with open('page.html', 'w') as f:
+        f.write(driver.page_source)
     driver.quit()
 
 def getTwitterAcounts():
@@ -231,10 +231,9 @@ def getTwitterAcounts():
     return resultData
 
 if __name__ == '__main__':
-    save_tweet_data_to_csv(None, csvPath, 'w')  # create file for saving records
     #userList = ["arminLaschet", "_FriedrichMerz", "Markus_Soeder"]
-    userList = ["Th_Seitz_AfD"]
+    userList = ["vadve"]
     for user in userList:
         url = 'https://twitter.com/' + user
-        main2(url, csvPath, datetime.datetime(2010,1,1))
+        main(url, user + '.csv', datetime.datetime(2010,1,1))
 
