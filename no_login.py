@@ -41,8 +41,21 @@ def change_page_sort(tab_name, driver):
 def generate_tweet_id(tweet):
     return ''.join(tweet)
 
+def scroll_completely(driver, scroll_attempt, num_seconds_to_load=0.2 , max_attempts=10):
+    curr_position = driver.execute_script("return window.pageYOffset;")
+    while True:
+        last_position = curr_position
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        curr_position = driver.execute_script("return window.pageYOffset;")
+        sleep(num_seconds_to_load)
+        if curr_position == last_position:
+            if scroll_attempt == max_attempts:
+                break
+            else:
+                scroll_completely(driver, scroll_attempt + 1)
+        last_position = curr_position
 
-def scroll_down_page(driver, last_position, num_seconds_to_load=0.8, scroll_attempt=0, max_attempts=3):
+def scroll_down_page(driver, last_position, num_seconds_to_load=0.3, scroll_attempt=0, max_attempts=100):
     """The function will try to scroll down the page and will check the current
     and last positions as an indicator. If the current and last positions are the same after `max_attempts`
     the assumption is that the end of the scroll region has been reached and the `end_of_scroll_region`
@@ -71,7 +84,7 @@ def save_tweet_data_to_csv(records, filepath, mode='a+'):
             writer.writerow(records)
 
 
-def collect_all_tweets_from_current_view(driver, lookback_limit=25):
+def collect_all_tweets_from_current_view(driver, lookback_limit=100000):
     """The page is continously loaded, so as you scroll down the number of tweets returned by this function will
      continue to grow. To limit the risk of 're-processing' the same tweet over and over again, you can set the
      `lookback_limit` to only process the last `x` number of tweets extracted from the page in each iteration.
@@ -171,12 +184,57 @@ def main(url, filepath, minDate, age_sort='Latest'):
         last_position, end_of_scroll_region = scroll_down_page(driver, last_position)
     driver.quit()
 
+def main2(url, filepath, minDate, age_sort='Latest'):
+    driver = create_webdriver_instance()
+    pageLoaded = gotoUrl(url, driver)
+    if not pageLoaded:
+        return
+    sleep(4)
+    scroll_completely(driver, 0)
+    print("Start collection of tweets")
+    cards = collect_all_tweets_from_current_view(driver)
+    print("Finished collection of tweets")
+    counter = 1
+    for card in cards:
+            try:
+                tweet = extract_data_from_current_tweet_card(card)
+            except exceptions.StaleElementReferenceException:
+                continue
+            if not tweet:
+                continue
+            #tweet_id = generate_tweet_id(tweet)
+            #if tweet_id not in unique_tweets:
+                #unique_tweets.add(tweet_id)
+                #save_tweet_data_to_csv(tweet, filepath)
+            #else:
+                #print("double processing")
+                #continue
+            save_tweet_data_to_csv(tweet, filepath)
+            print("saving tweet: " + str(counter))
+            counter += 1
+            #indexOfTime = tweet[2].find("T")
+            #dateArr = tweet[2][:indexOfTime].split("-")
+            #date = datetime.datetime(int(dateArr[0]), int(dateArr[1]), int(dateArr[2]))
+            #if(date < minDate):
+                #return
+    driver.quit()
+
+def getTwitterAcounts():
+    with open('MdB.csv', newline='',encoding='cp1252') as f:
+        reader = csv.reader(f)
+        data = list(reader)
+        #print(data)
+    
+    resultData = []
+    for line in data:
+        resultData.append(line[0])
+    return resultData
 
 if __name__ == '__main__':
     save_tweet_data_to_csv(None, csvPath, 'w')  # create file for saving records
     #userList = ["arminLaschet", "_FriedrichMerz", "Markus_Soeder"]
-    userList = ["Markus_Soeder"]
+    userList = ["Th_Seitz_AfD"]
     for user in userList:
         url = 'https://twitter.com/' + user
-        main(url, csvPath, datetime.datetime(2021,3,1))
+        main2(url, csvPath, datetime.datetime(2010,1,1))
 
