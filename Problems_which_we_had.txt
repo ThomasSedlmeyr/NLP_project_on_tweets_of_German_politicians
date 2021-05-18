@@ -1,0 +1,5 @@
+1 Getting the data from Twitter
+1.1 We searched for a list with twitter accounts of German politicians  
+1.2 We decided to write our own scrap routine because of limitations of the twitter API
+1.3 Problem with the silenium browser extension because we simulated the behavior of normal twitter user. We were not able to buffer a huge amount of tweets.
+1.4 For every politician we saved his data in an own CSV-file
