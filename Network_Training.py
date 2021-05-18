@@ -12,23 +12,23 @@ from tensorflow.keras import losses
 from tensorflow.keras import preprocessing
 from tensorflow.keras.layers.experimental.preprocessing import TextVectorization
 
-#Hier steht der Text drin
-texts = []
-#Hier steht die Bewertung drin
-labels = []
 
 data = np.load('TweetAndParty.npy', allow_pickle=True)
 print(data.shape)
-texts = data[0]
-labels = data[1]
+texts = list(data[0])
+labels = list(data[1])
 
 batch_size = 32
 seed = 42
 sequence_length = 250
 
-raw_train_ds = tf.data.Dataset.from_tensor_slices((texts[2500:], labels[2500:]))#Macht keine Batches
-raw_val_ds = tf.data.Dataset.from_tensor_slices((texts[2000:2500], labels[2000:2500]))
-raw_test_ds = tf.data.Dataset.from_tensor_slices((texts[:2000], labels[:2000])) 
+print(type(texts))
+print(type(labels))
+trainIndex = int(0.8*len(texts))
+testIndex = int(0.1*len(texts)+trainIndex)
+raw_train_ds = tf.data.Dataset.from_tensor_slices((texts[:trainIndex], labels[:trainIndex]))#Macht keine Batches
+raw_val_ds = tf.data.Dataset.from_tensor_slices((texts[testIndex:], labels[testIndex:]))
+raw_test_ds = tf.data.Dataset.from_tensor_slices((texts[trainIndex:testIndex], labels[trainIndex:testIndex])) 
 
 batched_train_ds = raw_train_ds.batch(batch_size) #Hier werden Batches gemacht
 batched_val_ds = raw_val_ds.batch(batch_size) #Hier werden Batches gemacht

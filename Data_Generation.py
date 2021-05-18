@@ -1,12 +1,12 @@
 import csv
 import datetime
 from time import sleep
-from selenium.webdriver import Chrome
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions
-from selenium.common import exceptions
+#from selenium.webdriver import Chrome
+#from selenium.webdriver.common.keys import Keys
+#from selenium.webdriver.common.by import By
+#from selenium.webdriver.support.ui import WebDriverWait
+#from selenium.webdriver.support import expected_conditions
+#from selenium.common import exceptions
 from os import listdir
 import numpy as np
 
@@ -179,8 +179,8 @@ def generateNumpyArrayForTraining():
         for tweetData in tweetsOfOnePolitician:
             trainData = [] 
             trainData.append(tweetData[3])
-            party = dictionary.get(tweetData[len(tweetData)-1])
-            trainData.append(party)
+            party = dictPoliticianToParty.get(tweetData[len(tweetData)-1])
+            trainData.append(dictPartyToNumber.get(party))
             numpyList.append(trainData)
 
     numpyArray = np.array(numpyList)
@@ -218,6 +218,20 @@ def readCSVfileOfOnePolitician(fileName):
             
     return resultData[1:]
 
+def createPartyToNumberDict():
+    parties = set(dictPoliticianToParty.values())
+    keys = []
+    values = range(0,len(parties)-1)
+    for party in parties:
+        keys.append(party)
+        print(party)
+    return dict(zip(keys,values))
+
+def partyToArray(party):
+    resultArray = np.zeros(len(dictPartyToNumber.keys()))
+    
+    resultArray[dictPartyToNumber.get(party)] = 1
+    return resultArray
         
 def collectTwitterData():
     userList = getTwitterAccountNames()
@@ -225,7 +239,8 @@ def collectTwitterData():
         collectTwitterDataForUser(user)
 
 print("Hallo")
-dictionary = createDictionaryPoliticiansToParty()
+dictPoliticianToParty = createDictionaryPoliticiansToParty()
+dictPartyToNumber = createPartyToNumberDict()
 generateNumpyArrayForTraining()
 data = np.load("TweetAndParty.npy", allow_pickle=True)
 print("Fertig")
