@@ -12,28 +12,45 @@ from tensorflow.keras import losses
 from tensorflow.keras import preprocessing
 from tensorflow.keras.layers.experimental.preprocessing import TextVectorization
 
+tf.config.threading.set_intra_op_parallelism_threads(8) # Model uses 10 CPUs while training. + GPU
 
 data = np.load('TweetAndParty.npy', allow_pickle=True)
 print(data.shape)
 texts = list(data[0])
 labels = list(data[1])
 
+# Include the epoch in the file name (uses `str.format`)
+checkpoint_path = "training/cp-{epoch:04d}.ckpt"
+checkpoint_dir = os.path.dirname(checkpoint_path)
+
+train_per = 80
+val_per = 15
+
 batch_size = 32
 seed = 42
 sequence_length = 250
+epochs = 40
+
 
 print(type(texts))
 print(type(labels))
-trainIndex = int(0.8*len(texts))
-testIndex = int(0.1*len(texts)+trainIndex)
+trainIndex = int((1.0 *train_per/100)*len(texts))
+valIndex = int((1.0 *val_per/100)*len(texts)+trainIndex)
+
 raw_train_ds = tf.data.Dataset.from_tensor_slices((texts[:trainIndex], labels[:trainIndex]))#Macht keine Batches
-raw_val_ds = tf.data.Dataset.from_tensor_slices((texts[testIndex:], labels[testIndex:]))
-raw_test_ds = tf.data.Dataset.from_tensor_slices((texts[trainIndex:testIndex], labels[trainIndex:testIndex])) 
+raw_val_ds = tf.data.Dataset.from_tensor_slices((texts[trainIndex:valIndex], labels[trainIndex:valIndex]))
+raw_test_ds = tf.data.Dataset.from_tensor_slices((texts[valIndex:], labels[valIndex:])) 
 
-batched_train_ds = raw_train_ds.batch(batch_size) #Hier werden Batches gemacht
-batched_val_ds = raw_val_ds.batch(batch_size) #Hier werden Batches gemacht
-batched_test_ds = raw_test_ds.batch(batch_size) #Hier werden Batches gemacht
+batched_train_ds = raw_train_ds.batch(batch_size)
+batched_val_ds = raw_val_ds.batch(batch_size)
+batched_test_ds = raw_test_ds.batch(batch_size)
 
+AUTOTUNE = tf.data.AUTOTUNE
+train_ds = batched_train_ds.cache().prefetch(buffer_size=AUTOTUNE)
+val_ds = batched_val_ds.cache().prefetch(buffer_size=AUTOTUNE)
+test_ds = batched_test_ds.cache().prefetch(buffer_size=AUTOTUNE)
+
+batched_train_ds = batched_train_ds.shuffle(len(list(batched_train_ds)), seed = seed)
 #for text_batch, label_batch in batched_train_ds.take(1):
   #for i in range(0, 4):
     #print("Review", text_batch.numpy()[i])
@@ -76,6 +93,13 @@ train_ds = batched_train_ds.map(vectorize_text)
 val_ds = batched_val_ds.map(vectorize_text)
 test_ds = batched_test_ds.map(vectorize_text)
 
+cp_callback = tf.keras.callbacks.ModelCheckpoint(
+    filepath=checkpoint_path,
+    verbose=1,
+    save_weights_only=True,
+    save_freq=25*batch_size)
+
+
 embedding_dim = 16
 
 model = tf.keras.Sequential([
@@ -87,14 +111,15 @@ model = tf.keras.Sequential([
 
 model.summary()
 
-model.compile(loss=losses.BinaryCrossentropy(from_logits=True),
+model.compile(loss=losses.CategoricalCrossentropy(from_logits=True),
               optimizer='adam',
-              metrics=tf.metrics.BinaryAccuracy(threshold=0.0))
+              metrics=tf.metrics.Accuracy())
 
 epochs = 2
 history = model.fit(
     train_ds,
     validation_data=val_ds,
+    callback=[cp_callback],
     epochs=epochs)
 
 loss, accuracy = model.evaluate(test_ds)
@@ -141,7 +166,7 @@ export_model = tf.keras.Sequential([
 ])
 
 export_model.compile(
-    loss=losses.BinaryCrossentropy(from_logits=False), optimizer="adam", metrics=['accuracy']
+    loss=losses.CategoricalCrossentropy(from_logits=False), optimizer="adam", metrics=['accuracy']
 )
 
 # Test it with `raw_test_ds`, which yields raw strings

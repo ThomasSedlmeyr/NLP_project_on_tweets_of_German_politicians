@@ -146,6 +146,7 @@ def collectTwitterDataForUser(user):
         last_position, end_of_scroll_region = scroll_down_page(driver, last_position, 0)
     driver.quit()
 
+#Creates a dictionary which returns for every politician its party
 def createDictionaryPoliticiansToParty():
     accountsNamesParties = readMdBcsvFile()    
     keys = []
@@ -172,11 +173,14 @@ def readMdBcsvFile():
         accountsNamesParties.append((line[0], name, party))
     return accountsNamesParties
 
+#Generates a numpy array which is later used for training the network
+#The returned numpy array contains a list of Tupels where each comment has the specific label of the party
 def generateNumpyArrayForTraining():
     csvData = readAllCSVfilesOfAllPoliticans()
     numpyList = []
     for tweetsOfOnePolitician in csvData:   
         for tweetData in tweetsOfOnePolitician:
+            #trainData list of length 2 containing tweet text and coresponding number of party
             trainData = [] 
             trainData.append(tweetData[3])
             party = dictPoliticianToParty.get(tweetData[len(tweetData)-1])
@@ -187,6 +191,7 @@ def generateNumpyArrayForTraining():
     numpyArray = np.transpose(numpyArray)
     np.save("TweetAndParty", numpyArray)
 
+#returns a list with all twitter accounts
 def getTwitterAccountNames():
     accountPartyNames = readMdBcsvFile()
     twitterAccounts = []
@@ -194,6 +199,7 @@ def getTwitterAccountNames():
         twitterAccounts.append(account)
     return twitterAccounts
 
+#returns a list containing the content of all Small csv files of every politician 
 def readAllCSVfilesOfAllPoliticans():
     resultData = []
     fileNames = listdir("AlleTweets/")
@@ -203,6 +209,7 @@ def readAllCSVfilesOfAllPoliticans():
         resultData.append(data)
     return resultData
 
+#reads the csv-file of a certain politician 
 def readCSVfileOfOnePolitician(fileName):
     nameOfPolitician = fileName[0:len(fileName)-4] 
     filePath = "AlleTweets/"+fileName
@@ -218,15 +225,17 @@ def readCSVfileOfOnePolitician(fileName):
             
     return resultData[1:]
 
+#creates dictionary that maps every party to a different number
 def createPartyToNumberDict():
-    parties = set(dictPoliticianToParty.values())
+    parties = list(dict.fromkeys(dictPoliticianToParty.values()))
     keys = []
-    values = range(0,len(parties)-1)
+    values = range(0,len(parties))
     for party in parties:
         keys.append(party)
         print(party)
     return dict(zip(keys,values))
 
+#creates one-hot encoding for a given party using the partyToNumber dictionary
 def partyToArray(party):
     resultArray = np.zeros(len(dictPartyToNumber.keys()))
     
@@ -236,11 +245,24 @@ def partyToArray(party):
 def collectTwitterData():
     userList = getTwitterAccountNames()
     for user in userList:
+        
         collectTwitterDataForUser(user)
 
-print("Hallo")
+def showTweetcountPerParty(parties, data):
+    data = np.transpose(data)
+    counts = np.zeros(len(parties))
+ 
+    for d in data:
+        counts[d[1]] += 1
+    for i in range(0, len(parties)):
+        print(parties[i] + " " + str(counts[i]))
+
+
 dictPoliticianToParty = createDictionaryPoliticiansToParty()
 dictPartyToNumber = createPartyToNumberDict()
 generateNumpyArrayForTraining()
+
 data = np.load("TweetAndParty.npy", allow_pickle=True)
-print("Fertig")
+
+print(dictPartyToNumber)
+showTweetcountPerParty(list(dictPartyToNumber.keys()), data)
