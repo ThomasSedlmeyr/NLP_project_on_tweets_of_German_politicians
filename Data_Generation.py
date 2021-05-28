@@ -1,5 +1,6 @@
 from os import listdir
 import numpy as np
+import csv
 
 #Creates a dictionary which returns for every politician its party
 def createDictionaryPoliticiansToParty():
@@ -97,11 +98,6 @@ def partyToArray(party):
     resultArray[dictPartyToNumber.get(party)] = 1
     return resultArray
         
-def collectTwitterData():
-    userList = getTwitterAccountNames()
-    for user in userList:
-        
-        collectTwitterDataForUser(user)
 
 def showTweetcountPerParty(parties, data):
     data = np.transpose(data)
@@ -113,11 +109,3 @@ def showTweetcountPerParty(parties, data):
         print(parties[i] + " " + str(counts[i]))
 
 
-dictPoliticianToParty = createDictionaryPoliticiansToParty()
-dictPartyToNumber = createPartyToNumberDict()
-generateNumpyArrayForTraining()
-
-data = np.load("TweetAndParty.npy", allow_pickle=True)
-
-print(dictPartyToNumber)
-showTweetcountPerParty(list(dictPartyToNumber.keys()), data)

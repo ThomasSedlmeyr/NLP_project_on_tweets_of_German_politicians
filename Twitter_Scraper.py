@@ -1,4 +1,5 @@
 import csv
+import Data_Generation
 import datetime
 from time import sleep
 from selenium.webdriver import Chrome
@@ -8,7 +9,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.common import exceptions
 from os import listdir
-import numpy as np
 
 def create_webdriver_instance():
     driver = Chrome()
@@ -25,7 +25,7 @@ def gotoUrl(url, driver):
 def generate_tweet_id(tweet):
     return tweet[2]
 
-def scroll_down_page(driver, last_position, scroll_attempt, num_seconds_to_load=1.5, max_attempts=3):
+def scroll_down_page(driver, last_position, scroll_attempt, num_seconds_to_load=0.9, max_attempts=10):
     """The function will try to scroll down the page and will check the current
     and last positions as an indicator. If the current and last positions are the same after `max_attempts`
     the assumption is that the end of the scroll region has been reached and the `end_of_scroll_region`
@@ -145,3 +145,11 @@ def collectTwitterDataForUser(user):
                 #return
         last_position, end_of_scroll_region = scroll_down_page(driver, last_position, 0)
     driver.quit()
+
+
+def collectTwitterData():
+    userList = getTwitterAccountNames()
+    for user in userList:
+        collectTwitterDataForUser(user)
+
+collectTwitterData()
