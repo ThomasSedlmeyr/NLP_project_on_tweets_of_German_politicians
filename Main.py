@@ -1,10 +1,11 @@
-import Data_Generation
+import Data_Generation as dg
+import numpy as np
 
-dictPoliticianToParty = createDictionaryPoliticiansToParty()
-dictPartyToNumber = createPartyToNumberDict()
-generateNumpyArrayForTraining()
+
+dg.generateNumpyArrayForTraining()
+dg.saveDataOfLKRparty()
 
 data = np.load("TweetAndParty.npy", allow_pickle=True)
 
-print(dictPartyToNumber)
-showTweetcountPerParty(list(dictPartyToNumber.keys()), data)
+print(dg.dictPartyToNumber)
+dg.showTweetcountPerParty(list(dg.dictPartyToNumber.keys()), data)

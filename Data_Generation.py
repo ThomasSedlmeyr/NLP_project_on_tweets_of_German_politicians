@@ -48,9 +48,22 @@ def generateNumpyArrayForTraining():
             numpyList.append(trainData)
 
     numpyArray = np.array(numpyList)
-    numpyArray = np.transpose(numpyArray)
-    np.save("TweetAndParty", numpyArray)
+    np.random.shuffle(numpyArray)
+    trainIndex = int(0.8 * len(numpyArray))
+    testIndex = int(0.95 * len(numpyArray))  
+    
 
+    train = numpyArray[:trainIndex]
+    test = numpyArray[trainIndex:testIndex]
+    val = numpyArray[testIndex:]
+
+    train = np.transpose(train)
+    test = np.transpose(test)
+    val = np.transpose(val)
+
+    np.save("Train", train)
+    np.save("Test", test)
+    np.save("Val", val)
 #returns a list with all twitter accounts
 def getTwitterAccountNames():
     accountPartyNames = readMdBcsvFile()

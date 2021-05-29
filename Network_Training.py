@@ -14,36 +14,20 @@ from tensorflow.keras.layers.experimental.preprocessing import TextVectorization
 
 tf.config.threading.set_intra_op_parallelism_threads(8) # Model uses 10 CPUs while training. + GPU
 
-data = np.load('TweetAndParty.npy', allow_pickle=True)
-print(data.shape)
-texts = list(data[0])
-labels = list(data[1])
-
 # Include the epoch in the file name (uses `str.format`)
 checkpoint_path = "cp-{epoch:04d}.ckpt"
 checkpoint_dir = os.path.dirname(checkpoint_path)
 
-train_per = 80
-val_per = 15
-
 batch_size = 32
-seed = 42
 sequence_length = 250
-epochs = 40
+epochs = 5
 
-
-print(type(texts))
-print(type(labels))
-trainIndex = int((1.0 *train_per/100)*len(texts))
-valIndex = int((1.0 *val_per/100)*len(texts)+trainIndex)
-
-dataset = tf.data.Dataset.from_tensor_slices((texts, labels))
-dataset = dataset.shuffle(len(texts), seed = seed)
-
-raw_train_ds = dataset.take(trainIndex)
-raw_val_ds = dataset.take(valIndex)
-raw_val_ds = raw_val_ds.skip(trainIndex)
-raw_test_ds = dataset.skip(valIndex)
+trainNp = np.load('Train.npy', allow_pickle=True)
+testNp = np.load('Test.npy', allow_pickle=True)
+valNp = np.load('Val.npy', allow_pickle=True)
+raw_train_ds = tf.data.Dataset.from_tensor_slices((list(trainNp[0]), list(trainNp[1])))
+raw_test_ds = tf.data.Dataset.from_tensor_slices((list(testNp[0]), list(testNp[1])))
+raw_val_ds = tf.data.Dataset.from_tensor_slices((list(valNp[0]), list(valNp[1])))
 
 
 batched_train_ds = raw_train_ds.batch(batch_size)
@@ -56,7 +40,7 @@ train_ds = batched_train_ds.cache().prefetch(buffer_size=AUTOTUNE)
 val_ds = batched_val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 test_ds = batched_test_ds.cache().prefetch(buffer_size=AUTOTUNE)
 
-trains_ds = train_ds.shuffle(len(list(train_ds)), seed = seed)
+
 #for text_batch, label_batch in batched_train_ds.take(1):
   #for i in range(0, 4):
     #print("Review", text_batch.numpy()[i])
@@ -78,7 +62,7 @@ vectorize_layer = TextVectorization(
     output_sequence_length=sequence_length)
 
 # Make a text-only dataset (without labels), then call adapt
-train_text = trains_ds.map(lambda x, y: x)
+train_text = train_ds.map(lambda x, y: x)
 vectorize_layer.adapt(train_text)
 
 def vectorize_text(text, label):
@@ -86,7 +70,7 @@ def vectorize_text(text, label):
   return vectorize_layer(text), label
 
 # retrieve a batch (of 32 reviews and labels) from the dataset
-text_batch, label_batch = next(iter(trains_ds))
+text_batch, label_batch = next(iter(train_ds))
 first_review, first_label = text_batch[0], label_batch[0]
 print("Review", first_review)
 print("Vectorized review", vectorize_text(first_review, first_label))
@@ -95,7 +79,7 @@ print("1287 ---> ",vectorize_layer.get_vocabulary()[1287])
 print(" 313 ---> ",vectorize_layer.get_vocabulary()[313])
 print('Vocabulary size: {}'.format(len(vectorize_layer.get_vocabulary())))
 
-train_ds = trains_ds.map(vectorize_text)
+train_ds = train_ds.map(vectorize_text)
 val_ds = val_ds.map(vectorize_text)
 test_ds = test_ds.map(vectorize_text)
 
@@ -118,9 +102,9 @@ model.summary()
 
 model.compile(loss='binary_crossentropy',
               optimizer='adam',
-              metrics=tf.metrics.AUC())
+              metrics=['accuracy'])
 
-epochs = 10
+
 
 def train():
   history = model.fit(
@@ -138,12 +122,12 @@ def train():
   history_dict.keys()
 
 
-  acc = history_dict['auc']
-  val_acc = history_dict['val_auc']
+  acc = history_dict['accuracy']
+  val_acc = history_dict['val_accuracy']
   loss = history_dict['loss']
   val_loss = history_dict['val_loss']
 
-  epochs = range(1, len(acc) + 1)
+ # epochs = range(1, len(acc) + 1)
 
   # "bo" is for "blue dot"
   plt.plot(epochs, loss, 'bo', label='Training loss')
@@ -173,13 +157,26 @@ def train():
 
 
 def evaluate():
-  
+  latest = tf.train.latest_checkpoint(checkpoint_dir)
+  model.load_weights(latest)
+  export_model = tf.keras.Sequential([
+    vectorize_layer,
+    model,
+    layers.Activation('sigmoid')
+  ])
+
+  export_model.compile(
+      loss=losses.BinaryCrossentropy(from_logits=False), optimizer="adam", metrics=['accuracy']
+  )
   parties = ['CDU', 'LINKE', 'GRÜNE', 'SPD', 'CSU', 'AFD']
 
-  result = model.predict(text)
-  for i in range(0, len(texts)):
+  result = export_model.predict(testNp[0])
+  #result2 = export_model.evaluate(testNp)
+  for i in range(0, len(testNp[0])):
       print(parties)           
-      print(raw_test_ds.get)
+      print("Network: " + str(result[i]))
+      print("Expected: " + str(testNp[1][i]))
 
 
+#train()
 evaluate()
