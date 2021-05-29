@@ -2,6 +2,7 @@ from os import listdir
 import numpy as np
 import csv
 
+
 #Creates a dictionary which returns for every politician its party
 def createDictionaryPoliticiansToParty():
     accountsNamesParties = readMdBcsvFile()    
@@ -26,7 +27,9 @@ def readMdBcsvFile():
         indexOfSpace = line[1].rindex(" ")
         name = line[1][0:indexOfSpace]
         party = line[1][indexOfSpace+1:]
-        accountsNamesParties.append((line[0], name, party))
+        if (name != 'Mario Mieruch'):
+            accountsNamesParties.append((line[0], name, party))
+        
     return accountsNamesParties
 
 #Generates a numpy array which is later used for training the network
@@ -34,13 +37,14 @@ def readMdBcsvFile():
 def generateNumpyArrayForTraining():
     csvData = readAllCSVfilesOfAllPoliticans()
     numpyList = []
-    for tweetsOfOnePolitician in csvData:   
+    for tweetsOfOnePolitician in csvData: 
+
         for tweetData in tweetsOfOnePolitician:
             #trainData list of length 2 containing tweet text and coresponding number of party
             trainData = [] 
             trainData.append(tweetData[3])
             party = dictPoliticianToParty.get(tweetData[len(tweetData)-1])
-            trainData.append(dictPartyToNumber.get(party))
+            trainData.append(partyToArray(party))
             numpyList.append(trainData)
 
     numpyArray = np.array(numpyList)
@@ -60,9 +64,10 @@ def readAllCSVfilesOfAllPoliticans():
     resultData = []
     fileNames = listdir("AlleTweets/")
     for fileName in fileNames:
-        data = readCSVfileOfOnePolitician(fileName)        
-        #The name of the politician is added to the data        
-        resultData.append(data)
+        if not fileName == 'MieruchMario.csv':
+            data = readCSVfileOfOnePolitician(fileName)        
+            #The name of the politician is added to the data        
+            resultData.append(data)
     return resultData
 
 #reads the csv-file of a certain politician 
@@ -97,7 +102,7 @@ def partyToArray(party):
     
     resultArray[dictPartyToNumber.get(party)] = 1
     return resultArray
-        
+      
 
 def showTweetcountPerParty(parties, data):
     data = np.transpose(data)
@@ -108,4 +113,17 @@ def showTweetcountPerParty(parties, data):
     for i in range(0, len(parties)):
         print(parties[i] + " " + str(counts[i]))
 
+def saveDataOfLKRparty():
+    resultData = []
+    data = readCSVfileOfOnePolitician("MieruchMario.csv")        
+    for tweetData in data:
+        #trainData list of length 2 containing tweet text and coresponding number of party
+        resultData.append(tweetData[3])
+
+    numpyArray = np.array(resultData)
+    np.save("LKR", numpyArray)
+
+tweetIdToParty = {}
+dictPoliticianToParty = createDictionaryPoliticiansToParty()
+dictPartyToNumber = createPartyToNumberDict()
 
