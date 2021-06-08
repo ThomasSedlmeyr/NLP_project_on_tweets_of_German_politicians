@@ -109,8 +109,6 @@ model.compile(loss='binary_crossentropy',
               optimizer='adam',
               metrics=['accuracy'])
 
-
-
 def train():
   history = model.fit(
       train_ds,
@@ -122,43 +120,6 @@ def train():
 
   print("Loss: ", loss)
   print("Accuracy: ", accuracy)
-
-  history_dict = history.history
-  history_dict.keys()
-
-
-  acc = history_dict['accuracy']
-  val_acc = history_dict['val_accuracy']
-  loss = history_dict['loss']
-  val_loss = history_dict['val_loss']
-
- # epochs = range(1, len(acc) + 1)
-
-  # "bo" is for "blue dot"
-  plt.plot(epochs, loss, 'bo', label='Training loss')
-  # b is for "solid blue line"
-  plt.plot(epochs, val_loss, 'b', label='Validation loss')
-  plt.title('Training and validation loss')
-  plt.xlabel('Epochs')
-  plt.ylabel('Loss')
-  plt.legend()
-
-  plt.show()
-
-
-  plt.plot(epochs, acc, 'bo', label='Training acc')
-  plt.plot(epochs, val_acc, 'b', label='Validation acc')
-  plt.title('Training and validation accuracy')
-  plt.xlabel('Epochs')
-  plt.ylabel('Accuracy')
-  plt.legend(loc='lower right')
-
-  plt.show()
-
-
-  # Test it with `raw_test_ds`, which yields raw strings
-  #loss, accuracy = export_model.evaluate(test_ds)
-  #print(accuracy)
 
 
 def evaluate():
@@ -175,8 +136,20 @@ def evaluate():
       loss=losses.BinaryCrossentropy(from_logits=False), optimizer="adam", metrics=['accuracy']
   )
 
+  predictions = export_model.predict(testNp[0])
+  wrongClassifications = []
+  for i in range(0, len(predictions)):
+    guess = predictions[i]
+    if (testNp[1][i][guess] == 0):
+      wrongClassifications.append(i)
+
+  testTransposed = np.transpose(testNp)
+  for i in wrongClassifications:
+    print(testTransposed[i])
 
   evaluateLKR(export_model)
+
+
   #result = export_model.predict(lkrTweets)
   #for i in range(0, len(result)):
   #    print(parties)           

@@ -26,9 +26,8 @@ def readMdBcsvFile():
     for line in data:        
         indexOfSpace = line[1].rindex(" ")
         name = line[1][0:indexOfSpace]
-        party = line[1][indexOfSpace+1:]
-        if (name != 'Mario Mieruch'):
-            accountsNamesParties.append((line[0], name, party))
+        party = line[1][indexOfSpace+1:]        
+        accountsNamesParties.append((line[0], name, party))
         
     return accountsNamesParties
 
@@ -37,16 +36,26 @@ def readMdBcsvFile():
 def generateNumpyArrayForTraining():
     csvData = readAllCSVfilesOfAllPoliticans()
     numpyList = []
-    for tweetsOfOnePolitician in csvData: 
-
+    tweetTimesAndNames = set()
+    counter = 0
+    for tweetsOfOnePolitician in csvData:
+        #print(counter)
+        counter += 1
         for tweetData in tweetsOfOnePolitician:
-            #trainData list of length 2 containing tweet text and coresponding number of party
-            trainData = [] 
-            trainData.append(tweetData[3])
-            party = dictPoliticianToParty.get(tweetData[len(tweetData)-1])
-            trainData.append(partyToArray(party))
-            numpyList.append(trainData)
-
+            #trainData list of length 2 containing tweet text and coresponding number of party           
+            name = tweetData[0] 
+            time = tweetData[2] 
+            timeAndName = name + time
+            if(not (timeAndName in tweetTimesAndNames)):                
+                trainData = [] 
+                trainData.append(tweetData[3])
+                party = dictPoliticianToParty.get(tweetData[len(tweetData)-1])
+                trainData.append(partyToArray(party))
+                numpyList.append(trainData)
+                tweetTimesAndNames.add(timeAndName)
+            #else:
+                #print("Hallo")
+         
     numpyArray = np.array(numpyList)
     np.random.shuffle(numpyArray)
     trainIndex = int(0.8 * len(numpyArray))
@@ -64,6 +73,7 @@ def generateNumpyArrayForTraining():
     np.save("Train", train)
     np.save("Test", test)
     np.save("Val", val)
+    np.save("TweetAndParty", np.transpose(numpyArray))
 #returns a list with all twitter accounts
 def getTwitterAccountNames():
     accountPartyNames = readMdBcsvFile()
@@ -75,18 +85,24 @@ def getTwitterAccountNames():
 #returns a list containing the content of all Small csv files of every politician 
 def readAllCSVfilesOfAllPoliticans():
     resultData = []
-    fileNames = listdir("AlleTweets/")
-    for fileName in fileNames:
-        if not fileName == 'MieruchMario.csv':
-            data = readCSVfileOfOnePolitician(fileName)        
-            #The name of the politician is added to the data        
-            resultData.append(data)
+    folder = "AllTweets_1/"
+    fileNames = listdir(folder)
+    for fileName in fileNames:        
+        data = readCSVfileOfOnePolitician(fileName, folder)        
+        #The name of the politician is added to the data        
+        resultData.append(data)
+    folder = "AllTweets_2/"
+    fileNames = listdir(folder)
+    for fileName in fileNames:        
+         data = readCSVfileOfOnePolitician(fileName, folder)        
+         #The name of the politician is added to the data        
+         resultData.append(data)    
     return resultData
 
 #reads the csv-file of a certain politician 
-def readCSVfileOfOnePolitician(fileName):
+def readCSVfileOfOnePolitician(fileName, folder):
     nameOfPolitician = fileName[0:len(fileName)-4] 
-    filePath = "AlleTweets/"+fileName
+    filePath = folder+fileName
     resultData = []
     
     with open(filePath, newline='') as f:
@@ -116,13 +132,18 @@ def partyToArray(party):
     resultArray[dictPartyToNumber.get(party)] = 1
     return resultArray
       
+def getIndexOfParty(array):
+    for i in range(0,len(array)):
+        if(array[i] == 1):
+            return i
+    return -1    
 
 def showTweetcountPerParty(parties, data):
     data = np.transpose(data)
     counts = np.zeros(len(parties))
  
     for d in data:
-        counts[d[1]] += 1
+        counts[getIndexOfParty(d[1])] += 1
     for i in range(0, len(parties)):
         print(parties[i] + " " + str(counts[i]))
 
@@ -130,8 +151,8 @@ def saveDataOfLKRparty():
     resultData = []
     data = readCSVfileOfOnePolitician("MieruchMario.csv")        
     for tweetData in data:
-        #trainData list of length 2 containing tweet text and coresponding number of party
         resultData.append(tweetData[3])
+
 
     numpyArray = np.array(resultData)
     np.save("LKR", numpyArray)
