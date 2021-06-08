@@ -3,7 +3,7 @@ import numpy as np
 
 
 dg.generateNumpyArrayForTraining()
-dg.saveDataOfLKRparty()
+#dg.saveDataOfLKRparty()
 
 data = np.load("TweetAndParty.npy", allow_pickle=True)
 

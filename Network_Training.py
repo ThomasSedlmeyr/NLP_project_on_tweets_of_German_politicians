@@ -6,13 +6,14 @@ import string
 import tensorflow as tf
 import pandas as pd
 import numpy as np
+import datetime
 
 from tensorflow.keras import layers
 from tensorflow.keras import losses
 from tensorflow.keras import preprocessing
 from tensorflow.keras.layers.experimental.preprocessing import TextVectorization
 
-tf.config.threading.set_intra_op_parallelism_threads(8) # Model uses 10 CPUs while training. + GPU
+tf.config.threading.set_intra_op_parallelism_threads(6) # Model uses 6 CPUs while training. + GPU
 
 # Include the epoch in the file name (uses `str.format`)
 checkpoint_path = "cp-{epoch:04d}.ckpt"
@@ -22,6 +23,7 @@ batch_size = 32
 sequence_length = 250
 epochs = 5
 
+lkrTweets = np.load('LKR.npy', allow_pickle=True)
 trainNp = np.load('Train.npy', allow_pickle=True)
 testNp = np.load('Test.npy', allow_pickle=True)
 valNp = np.load('Val.npy', allow_pickle=True)
@@ -88,6 +90,8 @@ cp_callback = tf.keras.callbacks.ModelCheckpoint(
     verbose=1,
     save_weights_only=True)
 
+log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
 embedding_dim = 16
 
@@ -96,6 +100,7 @@ model = tf.keras.Sequential([
   layers.Dropout(0.2),
   layers.GlobalAveragePooling1D(),
   layers.Dropout(0.2),
+  layers.Dense(10000, activation='relu'),
   layers.Dense(7, activation='sigmoid')])
 
 model.summary()
@@ -110,7 +115,7 @@ def train():
   history = model.fit(
       train_ds,
       validation_data=val_ds,
-      callbacks=[cp_callback],
+      callbacks=[cp_callback, tensorboard_callback],
       epochs=epochs)
 
   loss, accuracy = model.evaluate(test_ds)
@@ -161,22 +166,37 @@ def evaluate():
   model.load_weights(latest)
   export_model = tf.keras.Sequential([
     vectorize_layer,
-    model,
-    layers.Activation('sigmoid')
+    model
+    #,
+    #layers.Activation('sigmoid')
   ])
 
   export_model.compile(
       loss=losses.BinaryCrossentropy(from_logits=False), optimizer="adam", metrics=['accuracy']
   )
-  parties = ['CDU', 'LINKE', 'GRÜNE', 'SPD', 'CSU', 'AFD']
-
-  result = export_model.predict(testNp[0])
-  #result2 = export_model.evaluate(testNp)
-  for i in range(0, len(testNp[0])):
-      print(parties)           
-      print("Network: " + str(result[i]))
-      print("Expected: " + str(testNp[1][i]))
 
 
-#train()
+  evaluateLKR(export_model)
+  #result = export_model.predict(lkrTweets)
+  #for i in range(0, len(result)):
+  #    print(parties)           
+  #    print("Network: " + str(result[i]))
+  #result = export_model.predict(testNp[0])
+  #result2 = export_model.evaluate(testNp[0])
+  #for i in range(0, len(testNp[0])):
+  #    print(parties)           
+    #  print("Network: " + str(result[i]))
+   # #  print("Expected: " + str(testNp[1][i]))
+
+def evaluateLKR(export_model):
+  result = export_model.predict(lkrTweets)
+  sum = np.zeros(len(parties)+1)
+  for i in range(0, len(result)):
+    sum = np.add(sum, result[i])
+
+  print(parties)           
+  print("Network: " + str(sum))
+
+parties = ['CDU', 'LINKE', 'FDP', 'GRÜNE','SPD', 'CSU', 'AFD']
+train()
 evaluate()
