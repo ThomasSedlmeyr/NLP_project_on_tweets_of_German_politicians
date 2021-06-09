@@ -15,6 +15,7 @@ from tensorflow.keras.layers.experimental.preprocessing import TextVectorization
 
 tf.config.threading.set_intra_op_parallelism_threads(6) # Model uses 6 CPUs while training. + GPU
 
+import kerastuner as kt
 # Include the epoch in the file name (uses `str.format`)
 checkpoint_path = "cp-{epoch:04d}.ckpt"
 checkpoint_dir = os.path.dirname(checkpoint_path)
@@ -50,10 +51,11 @@ test_ds = batched_test_ds.cache().prefetch(buffer_size=AUTOTUNE)
 
 def custom_standardization(input_data):
   lowercase = tf.strings.lower(input_data)
-  stripped_html = tf.strings.regex_replace(lowercase, '<br />', ' ')
-  return tf.strings.regex_replace(stripped_html,
+  lowercase = tf.strings.regex_replace(lowercase,
                                   '[%s]' % re.escape(string.punctuation),
                                   '')
+  lowercase = tf.strings.regex_replace(lowercase, '\n', '')
+  return lowercase
 
 max_features = 10000
 
@@ -77,9 +79,12 @@ first_review, first_label = text_batch[0], label_batch[0]
 print("Review", first_review)
 print("Vectorized review", vectorize_text(first_review, first_label))
 
-print("1287 ---> ",vectorize_layer.get_vocabulary()[1287])
-print(" 313 ---> ",vectorize_layer.get_vocabulary()[313])
 print('Vocabulary size: {}'.format(len(vectorize_layer.get_vocabulary())))
+
+vocabulary = vectorize_layer.get_vocabulary()
+
+
+
 
 train_ds = train_ds.map(vectorize_text)
 val_ds = val_ds.map(vectorize_text)
@@ -95,21 +100,67 @@ tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram
 
 embedding_dim = 16
 
-model = tf.keras.Sequential([
-  layers.Embedding(max_features + 1, embedding_dim),
-  layers.Dropout(0.2),
-  layers.GlobalAveragePooling1D(),
-  layers.Dropout(0.2),
-  layers.Dense(10000, activation='relu'),
-  layers.Dense(7, activation='sigmoid')])
+def model_builder(hp):
 
-model.summary()
+  model = tf.keras.Sequential([
+  tf.keras.layers.Embedding(max_features + 1, embedding_dim),
+  tf.keras.layers.Dropout(0.2),
+  tf.keras.layers.GlobalAveragePooling1D()])
 
-model.compile(loss='binary_crossentropy',
-              optimizer='adam',
-              metrics=['accuracy'])
+  hp_units = hp.Int('units', min_value=500, max_value=20000, step=200)
+  model.add(tf.keras.layers.Dense(units=hp_units, activation='relu'))
+  model.add(tf.keras.layers.Dropout(0.2))
+  model.add(tf.keras.layers.Dense(7, activation='sigmoid'))
+  # Tune the number of units in the first Dense layer
+  # Choose an optimal value between 32-512
+
+
+  # Tune the learning rate for the optimizer
+  # Choose an optimal value from 0.01, 0.001, or 0.0001
+  hp_learning_rate = hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4,1e-5, 1e-6])
+
+  model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=hp_learning_rate),
+                loss='binary_crossentropy',
+                metrics=['accuracy'])
+
+  return model
+
+#model = tf.keras.Sequential([
+  #layers.Embedding(max_features + 1, embedding_dim),
+  #layers.Dropout(0.2),
+  #layers.GlobalAveragePooling1D(), 
+  #layers.Dense(1000, activation='relu'),
+  #layers.Dropout(0.2),
+  #layers.Dense(7, activation='sigmoid')])
+
+#model.summary()
+
+#model.compile(loss='binary_crossentropy',
+              #optimizer='adam',
+              #metrics=['accuracy'])
+
+def hyperTrain():
+  tuner = kt.Hyperband(model_builder,
+                     objective='val_accuracy',
+                     max_epochs=10,
+                     factor=3,
+                     directory='hyperParams_opt',
+                     project_name='test')
+
+  stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
+  tuner.search(train_ds, epochs=50, validation_data=val_ds, callbacks=[stop_early])
+
+  # Get the optimal hyperparameters
+  best_hps=tuner.get_best_hyperparameters(num_trials=1)[0]
+
+  print(f"""
+  The hyperparameter search is complete. The optimal number of units in the first densely-connected
+  layer is {best_hps.get('units')} and the optimal learning rate for the optimizer
+  is {best_hps.get('learning_rate')}.
+  """)
 
 def train():
+
   history = model.fit(
       train_ds,
       validation_data=val_ds,
@@ -171,5 +222,6 @@ def evaluateLKR(export_model):
   print("Network: " + str(sum))
 
 parties = ['CDU', 'LINKE', 'FDP', 'GRÜNE','SPD', 'CSU', 'AFD']
-train()
-evaluate()
+hyperTrain()
+#train()
+#evaluate()
