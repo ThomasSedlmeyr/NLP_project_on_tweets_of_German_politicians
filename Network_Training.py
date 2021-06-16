@@ -84,8 +84,6 @@ print('Vocabulary size: {}'.format(len(vectorize_layer.get_vocabulary())))
 vocabulary = vectorize_layer.get_vocabulary()
 
 
-
-
 train_ds = train_ds.map(vectorize_text)
 val_ds = val_ds.map(vectorize_text)
 test_ds = test_ds.map(vectorize_text)
@@ -107,7 +105,7 @@ def model_builder(hp):
   tf.keras.layers.Dropout(0.2),
   tf.keras.layers.GlobalAveragePooling1D()])
 
-  hp_units = hp.Int('units', min_value=500, max_value=20000, step=200)
+  hp_units = hp.Int('units', min_value=500, max_value=20000, step=1000)
   model.add(tf.keras.layers.Dense(units=hp_units, activation='relu'))
   model.add(tf.keras.layers.Dropout(0.2))
   model.add(tf.keras.layers.Dense(7, activation='sigmoid'))
@@ -117,7 +115,7 @@ def model_builder(hp):
 
   # Tune the learning rate for the optimizer
   # Choose an optimal value from 0.01, 0.001, or 0.0001
-  hp_learning_rate = hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4,1e-5, 1e-6])
+  hp_learning_rate = hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4,1e-5])
 
   model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=hp_learning_rate),
                 loss='binary_crossentropy',
