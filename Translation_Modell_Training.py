@@ -10,24 +10,65 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 
-import tensorflow_datasets as tfds
 import tensorflow_text as text
+import tensorflow_datasets as tfds
 import tensorflow as tf
 
 
 logging.getLogger('tensorflow').setLevel(logging.ERROR)  # suppress warnings
 
 
+def createEnglishGermanSentenceDataSet():
+    dataSet = []
+    germanSentence = ""
+    englishSentence = ""
+    isGerman = False
+    counter = 1
+    with open("Dataset_TED_English_German.txt.") as file:
+        for line in file:
+            #An empty line indicates a new pair of English and German sentences 
+            if(line == "\n"):
+                dataSet.append([englishSentence, germanSentence])
+            elif(isGerman):
+                germanSentence = line
+                isGerman = False
+            else: 
+                englishSentence = line
+                isGerman = True
+
+    numpyArray = np.array(dataSet)
+    #np.save("Dataset_TED_English_German", numpyArray)
+    print("DataSet was created!")
+    trainIndex = int(0.85 * len(numpyArray))
+    valIndex = int(0.9 * len(numpyArray))
+    raw_train_ds = tf.data.Dataset.from_tensor_slices((list(numpyArray[:trainIndex][0]), list(numpyArray[:trainIndex][1])))
+    raw_val_ds = tf.data.Dataset.from_tensor_slices(((list(numpyArray[trainIndex:valIndex][0]), list(numpyArray[trainIndex:valIndex][1]))))
+    raw_test_ds = tf.data.Dataset.from_tensor_slices((list(numpyArray[valIndex:][0]), (list(numpyArray[valIndex:][1]))))
+
+    # batched_train_ds = raw_train_ds.batch(batch_size)
+    # batched_val_ds = raw_val_ds.batch(batch_size)
+    # batched_test_ds = raw_test_ds.batch(batch_size)
+
+
+    # AUTOTUNE = tf.data.experimental.AUTOTUNE
+    # train_ds = batched_train_ds.cache().prefetch(buffer_size=AUTOTUNE)
+    # val_ds = batched_val_ds.cache().prefetch(buffer_size=AUTOTUNE)
+    # test_ds = batched_test_ds.cache().prefetch(buffer_size=AUTOTUNE)
+    return (raw_train_ds, raw_val_ds)
+
 # ## Download the Dataset
+#examples = tfds.load("wmt19_translate/de-en") 
+#examples = tfds.load("wmt16_translate/de-en") 
 
-examples, metadata = tfds.load('ted_hrlr_translate/pt_to_en', with_info=True,
-                               as_supervised=True)
-train_examples, val_examples = examples['train'], examples['validation']
+#examples, metadata = tfds.load('ted_hrlr_translate/pt_to_en', with_info=True,
+ #                              as_supervised=True)
 
+#train_examples, val_examples = examples['train'], examples['validation']
+
+#With my dataset
+(train_examples, val_examples) = createEnglishGermanSentenceDataSet()
 
 # The `tf.data.Dataset` object returned by TensorFlow datasets yields pairs of text examples:
-
-
 for pt_examples, en_examples in train_examples.batch(3).take(1):
   for pt in pt_examples.numpy():
     print(pt.decode('utf-8'))
@@ -37,15 +78,11 @@ for pt_examples, en_examples in train_examples.batch(3).take(1):
   for en in en_examples.numpy():
     print(en.decode('utf-8'))
 
-
 # ## Text tokenization & detokenization
-
 # You can't train a model directly on text. The text needs to be converted to some numeric representation first. Typically, you convert the text to sequences of token IDs, which are as indexes into an embedding.
-
 # One popular implementation is demonstrated in the [Subword tokenizer tutorial](https://www.tensorflow.org/text/guide/subwords_tokenizer) builds subword tokenizers (`text.BertTokenizer`) optimized for this dataset and exports them in a [saved_model](https://www.tensorflow.org/guide/saved_model). 
 # 
 # Download and unzip and import the `saved_model`:
-
 
 model_name = "ted_hrlr_translate_pt_en_converter"
 tf.keras.utils.get_file(
@@ -55,51 +92,32 @@ tf.keras.utils.get_file(
 )
 
 
-
-
 tokenizers = tf.saved_model.load(model_name)
-
 
 # The `tf.saved_model` contains two text tokenizers, one for English and one for Portuguese. Both have the same methods:
 
 [item for item in dir(tokenizers.en) if not item.startswith('_')]
 
-
 # The `tokenize` method converts a batch of strings to a padded-batch of token IDs. This method splits punctuation, lowercases and unicode-normalizes the input before tokenizing. That standardization is not visible here because the input data is already standardized.
-
-
-
 
 for en in en_examples.numpy():
   print(en.decode('utf-8'))
-
-
-
-
 
 encoded = tokenizers.en.tokenize(en_examples)
 
 for row in encoded.to_list():
   print(row)
 
-
 # The `detokenize` method attempts to convert these token IDs back to human readable text: 
-
-# In[12]:
-
 
 round_trip = tokenizers.en.detokenize(encoded)
 for line in round_trip.numpy():
   print(line.decode('utf-8'))
 
-
 # The lower level `lookup` method converts from token-IDs to token text:
-
-
 
 tokens = tokenizers.en.lookup(encoded)
 tokens
-
 
 # Here you can see the "subword" aspect of the tokenizers. The word "searchability" is decomposed into "search ##ability" and the word "serindipity" into "s ##ere ##nd ##ip ##ity"
 
@@ -108,8 +126,6 @@ tokens
 # To build an input pipeline suitable for training you'll apply some transformations to the dataset.
 # 
 # This function will be used to encode the batches of raw text:
-
-
 
 def tokenize_pairs(pt, en):
     pt = tokenizers.pt.tokenize(pt)
@@ -124,13 +140,8 @@ def tokenize_pairs(pt, en):
 
 # Here's a simple input pipeline that processes, shuffles and batches the data:
 
-
-
 BUFFER_SIZE = 20000
-BATCH_SIZE = 64
-
-
-
+BATCH_SIZE = 16
 
 def make_batches(ds):
   return (
@@ -145,7 +156,6 @@ def make_batches(ds):
 train_batches = make_batches(train_examples)
 val_batches = make_batches(val_examples)
 
-
 # ## Positional encoding
 # 
 # Since this model doesn't contain any recurrence or convolution, positional encoding is added to give the model some information about the relative position of the words in the sentence. 
@@ -157,15 +167,9 @@ val_batches = make_batches(val_examples)
 # $$\Large{PE_{(pos, 2i)} = \sin(pos / 10000^{2i / d_{model}})} $$
 # $$\Large{PE_{(pos, 2i+1)} = \cos(pos / 10000^{2i / d_{model}})} $$
 
-
-
 def get_angles(pos, i, d_model):
   angle_rates = 1 / np.power(10000, (2 * (i//2)) / np.float32(d_model))
   return pos * angle_rates
-
-
-
-
 
 def positional_encoding(position, d_model):
   angle_rads = get_angles(np.arange(position)[:, np.newaxis],
@@ -181,10 +185,6 @@ def positional_encoding(position, d_model):
   pos_encoding = angle_rads[np.newaxis, ...]
 
   return tf.cast(pos_encoding, dtype=tf.float32)
-
-
-
-
 
 n, d = 2048, 512
 pos_encoding = positional_encoding(n, d)
@@ -207,9 +207,6 @@ plt.show()
 
 # Mask all the pad tokens in the batch of sequence. It ensures that the model does not treat padding as the input. The mask indicates where pad value `0` is present: it outputs a `1` at those locations, and a `0` otherwise.
 
-
-
-
 def create_padding_mask(seq):
   seq = tf.cast(tf.math.equal(seq, 0), tf.float32)
 
@@ -218,32 +215,20 @@ def create_padding_mask(seq):
   return seq[:, tf.newaxis, tf.newaxis, :]  # (batch_size, 1, 1, seq_len)
 
 
-
-
-
 x = tf.constant([[7, 6, 0, 0, 1], [1, 2, 3, 0, 0], [0, 0, 0, 4, 5]])
 create_padding_mask(x)
-
 
 # The look-ahead mask is used to mask the future tokens in a sequence. In other words, the mask indicates which entries should not be used.
 # 
 # This means that to predict the third word, only the first and second word will be used. Similarly to predict the fourth word, only the first, second and the third word will be used and so on.
 
-
-
-
 def create_look_ahead_mask(size):
   mask = 1 - tf.linalg.band_part(tf.ones((size, size)), -1, 0)
   return mask  # (seq_len, seq_len)
 
-
-
-
-
 x = tf.random.uniform((1, 3))
 temp = create_look_ahead_mask(x.shape[1])
 temp
-
 
 # ## Scaled dot product attention
 
@@ -258,9 +243,6 @@ temp
 # For example, consider that `Q` and `K` have a mean of 0 and variance of 1. Their matrix multiplication will have a mean of 0 and variance of `dk`. So the *square root of `dk`* is used for scaling, so you get a consistent variance regardless of the value of `dk`. If the variance is too low the output may be too flat to optimize effectively. If the variance is too high the softmax may saturate at initilization making it dificult to learn. 
 # 
 # The mask is multiplied with -1e9 (close to negative infinity). This is done because the mask is summed with the scaled matrix multiplication of Q and K and is applied immediately before a softmax. The goal is to zero out these cells, and large negative inputs to softmax are near zero in the output.
-
-
-
 
 def scaled_dot_product_attention(q, k, v, mask):
   """Calculate the attention weights.
@@ -298,12 +280,9 @@ def scaled_dot_product_attention(q, k, v, mask):
 
   return output, attention_weights
 
-
 # As the softmax normalization is done on K, its values decide the amount of importance given to Q.
 # 
 # The output represents the multiplication of the attention weights and the V (value) vector. This ensures that the words you want to focus on are kept as-is and the irrelevant words are flushed out.
-
-
 
 
 def print_out(q, k, v):
@@ -313,10 +292,6 @@ def print_out(q, k, v):
   print(temp_attn)
   print('Output is:')
   print(temp_out)
-
-
-
-
 
 np.set_printoptions(suppress=True)
 
@@ -335,18 +310,10 @@ temp_v = tf.constant([[1, 0],
 temp_q = tf.constant([[0, 10, 0]], dtype=tf.float32)  # (1, 3)
 print_out(temp_q, temp_k, temp_v)
 
-
-
-
-
 # This query aligns with a repeated key (third and fourth),
 # so all associated values get averaged.
 temp_q = tf.constant([[0, 0, 10]], dtype=tf.float32)  # (1, 3)
 print_out(temp_q, temp_k, temp_v)
-
-
-
-
 
 # This query aligns equally with the first and second key,
 # so their values get averaged.
@@ -355,8 +322,6 @@ print_out(temp_q, temp_k, temp_v)
 
 
 # Pass all the queries together.
-
-
 
 temp_q = tf.constant([[0, 0, 10],
                       [0, 10, 0],
@@ -380,9 +345,6 @@ print_out(temp_q, temp_k, temp_v)
 # The `scaled_dot_product_attention` defined above is applied to each head (broadcasted for efficiency). An appropriate mask must be used in the attention step.  The attention output for each head is then concatenated (using `tf.transpose`, and `tf.reshape`) and put through a final `Dense` layer.
 # 
 # Instead of one single attention head, Q, K, and V are split into multiple heads because it allows the model to jointly attend to information at different positions from different representational spaces. After the split each head has a reduced dimensionality, so the total computation cost is the same as a single head attention with full dimensionality.
-
-
-
 
 class MultiHeadAttention(tf.keras.layers.Layer):
   def __init__(self, d_model, num_heads):
@@ -435,21 +397,14 @@ class MultiHeadAttention(tf.keras.layers.Layer):
 
 # Create a `MultiHeadAttention` layer to try out. At each location in the sequence, `y`, the `MultiHeadAttention` runs all 8 attention heads across all other locations in the sequence, returning a new vector of the same length at each location.
 
-
-
-
 temp_mha = MultiHeadAttention(d_model=512, num_heads=8)
 y = tf.random.uniform((1, 60, 512))  # (batch_size, encoder_sequence, d_model)
 out, attn = temp_mha(y, k=y, q=y, mask=None)
 out.shape, attn.shape
 
-
 # ## Point wise feed forward network
 
 # Point wise feed forward network consists of two fully-connected layers with a ReLU activation in between.
-
-
-
 
 def point_wise_feed_forward_network(d_model, dff):
   return tf.keras.Sequential([
@@ -458,12 +413,8 @@ def point_wise_feed_forward_network(d_model, dff):
   ])
 
 
-
-
-
 sample_ffn = point_wise_feed_forward_network(512, 2048)
 sample_ffn(tf.random.uniform((64, 50, 512))).shape
-
 
 # ## Encoder and decoder
 
@@ -484,9 +435,6 @@ sample_ffn(tf.random.uniform((64, 50, 512))).shape
 # Each of these sublayers has a residual connection around it followed by a layer normalization. Residual connections help in avoiding the vanishing gradient problem in deep networks.
 # 
 # The output of each sublayer is `LayerNorm(x + Sublayer(x))`. The normalization is done on the `d_model` (last) axis. There are N encoder layers in the transformer.
-
-
-
 
 class EncoderLayer(tf.keras.layers.Layer):
   def __init__(self, d_model, num_heads, dff, rate=0.1):
@@ -514,16 +462,12 @@ class EncoderLayer(tf.keras.layers.Layer):
     return out2
 
 
-
-
-
 sample_encoder_layer = EncoderLayer(512, 8, 2048)
 
 sample_encoder_layer_output = sample_encoder_layer(
     tf.random.uniform((64, 43, 512)), False, None)
 
 sample_encoder_layer_output.shape  # (batch_size, input_seq_len, d_model)
-
 
 # ### Decoder layer
 # 
@@ -538,9 +482,6 @@ sample_encoder_layer_output.shape  # (batch_size, input_seq_len, d_model)
 # There are N decoder layers in the transformer.
 # 
 # As Q receives the output from decoder's first attention block, and K receives the encoder output, the attention weights represent the importance given to the decoder's input based on the encoder's output. In other words, the decoder predicts the next word by looking at the encoder output and self-attending to its own output. See the demonstration above in the scaled dot product attention section.
-
-
-
 
 class DecoderLayer(tf.keras.layers.Layer):
   def __init__(self, d_model, num_heads, dff, rate=0.1):
@@ -578,10 +519,6 @@ class DecoderLayer(tf.keras.layers.Layer):
 
     return out3, attn_weights_block1, attn_weights_block2
 
-
-
-
-
 sample_decoder_layer = DecoderLayer(512, 8, 2048)
 
 sample_decoder_layer_output, _, _ = sample_decoder_layer(
@@ -589,7 +526,6 @@ sample_decoder_layer_output, _, _ = sample_decoder_layer(
     False, None, None)
 
 sample_decoder_layer_output.shape  # (batch_size, target_seq_len, d_model)
-
 
 # ### Encoder
 # 
@@ -599,10 +535,6 @@ sample_decoder_layer_output.shape  # (batch_size, target_seq_len, d_model)
 # 3.   N encoder layers
 # 
 # The input is put through an embedding which is summed with the positional encoding. The output of this summation is the input to the encoder layers. The output of the encoder is the input to the decoder.
-
-
-
-
 class Encoder(tf.keras.layers.Layer):
   def __init__(self, num_layers, d_model, num_heads, dff, input_vocab_size,
                maximum_position_encoding, rate=0.1):
@@ -636,9 +568,6 @@ class Encoder(tf.keras.layers.Layer):
 
     return x  # (batch_size, input_seq_len, d_model)
 
-
-
-
 sample_encoder = Encoder(num_layers=2, d_model=512, num_heads=8,
                          dff=2048, input_vocab_size=8500,
                          maximum_position_encoding=10000)
@@ -648,7 +577,6 @@ sample_encoder_output = sample_encoder(temp_input, training=False, mask=None)
 
 print(sample_encoder_output.shape)  # (batch_size, input_seq_len, d_model)
 
-
 # ### Decoder
 
 #  The `Decoder` consists of:
@@ -657,9 +585,6 @@ print(sample_encoder_output.shape)  # (batch_size, input_seq_len, d_model)
 # 3.   N decoder layers
 # 
 # The target is put through an embedding which is summed with the positional encoding. The output of this summation is the input to the decoder layers. The output of the decoder is the input to the final linear layer.
-
-
-
 
 class Decoder(tf.keras.layers.Layer):
   def __init__(self, num_layers, d_model, num_heads, dff, target_vocab_size,
@@ -698,9 +623,6 @@ class Decoder(tf.keras.layers.Layer):
     # x.shape == (batch_size, target_seq_len, d_model)
     return x, attention_weights
 
-
-
-
 sample_decoder = Decoder(num_layers=2, d_model=512, num_heads=8,
                          dff=2048, target_vocab_size=8000,
                          maximum_position_encoding=5000)
@@ -714,12 +636,9 @@ output, attn = sample_decoder(temp_input,
 
 output.shape, attn['decoder_layer2_block2'].shape
 
-
 # ## Create the Transformer
 
 # Transformer consists of the encoder, decoder and a final linear layer. The output of the decoder is the input to the linear layer and its output is returned.
-
-
 
 class Transformer(tf.keras.Model):
   def __init__(self, num_layers, d_model, num_heads, dff, input_vocab_size,
@@ -747,9 +666,6 @@ class Transformer(tf.keras.Model):
 
     return final_output, attention_weights
 
-
-
-
 sample_transformer = Transformer(
     num_layers=2, d_model=512, num_heads=8, dff=2048,
     input_vocab_size=8500, target_vocab_size=8000,
@@ -764,7 +680,6 @@ fn_out, _ = sample_transformer(temp_input, temp_target, training=False,
                                dec_padding_mask=None)
 
 fn_out.shape  # (batch_size, tar_seq_len, target_vocab_size)
-
 
 # ## Set hyperparameters
 
@@ -781,14 +696,12 @@ dff = 512
 num_heads = 8
 dropout_rate = 0.1
 
-
 # ## Optimizer
 
 # Use the Adam optimizer with a custom learning rate scheduler according to the formula in the [paper](https://arxiv.org/abs/1706.03762).
 # 
 # $$\Large{lrate = d_{model}^{-0.5} * \min(step{\_}num^{-0.5}, step{\_}num \cdot warmup{\_}steps^{-1.5})}$$
 # 
-
 
 class CustomSchedule(tf.keras.optimizers.schedules.LearningRateSchedule):
   def __init__(self, d_model, warmup_steps=4000):
@@ -828,9 +741,6 @@ print("Hallo 1")
 loss_object = tf.keras.losses.SparseCategoricalCrossentropy(
     from_logits=True, reduction='none')
 
-
-
-
 def loss_function(real, pred):
   mask = tf.math.logical_not(tf.math.equal(real, 0))
   loss_ = loss_object(real, pred)
@@ -839,7 +749,6 @@ def loss_function(real, pred):
   loss_ *= mask
 
   return tf.reduce_sum(loss_)/tf.reduce_sum(mask)
-
 
 def accuracy_function(real, pred):
   accuracies = tf.equal(real, tf.argmax(pred, axis=2))
@@ -858,9 +767,6 @@ train_accuracy = tf.keras.metrics.Mean(name='train_accuracy')
 
 
 # ## Training and checkpointing
-
-
-
 transformer = Transformer(
     num_layers=num_layers,
     d_model=d_model,
@@ -871,8 +777,6 @@ transformer = Transformer(
     pe_input=1000,
     pe_target=1000,
     rate=dropout_rate)
-
-
 
 def create_masks(inp, tar):
   # Encoder padding mask
@@ -893,7 +797,6 @@ def create_masks(inp, tar):
 
 
 # Create the checkpoint path and the checkpoint manager. This will be used to save checkpoints every `n` epochs.
-
 
 checkpoint_path = "./checkpoints/train"
 
@@ -924,9 +827,7 @@ if ckpt_manager.latest_checkpoint:
 # 
 # To prevent the model from peeking at the expected output the model uses a look-ahead mask.
 
-EPOCHS = 20
-
-
+EPOCHS = 2
 
 # The @tf.function trace-compiles train_step into a TF graph for faster
 # execution. The function specializes to the precise shape of the argument
@@ -988,7 +889,6 @@ for epoch in range(EPOCHS):
 
 
 # ## Evaluate
-
 # The following steps are used for evaluation:
 # 
 # * Encode the input sentence using the Portuguese tokenizer (`tokenizers.pt`). This is the encoder input.
@@ -1000,8 +900,6 @@ for epoch in range(EPOCHS):
 # * In this approach, the decoder predicts the next word based on the previous words it predicted.
 # 
 # Note: The model used here has less capacity to keep the example relatively faster so the predictions maybe less right. To reproduce the results in the paper, use the entire dataset and base transformer model or transformer XL, by changing the hyperparameters above.
-
-
 
 def evaluate(sentence, max_length=40):
   # inp sentence is portuguese, hence adding the start and end token
@@ -1048,14 +946,10 @@ def evaluate(sentence, max_length=40):
 
   return text, tokens, attention_weights
 
-
-
 def print_translation(sentence, tokens, ground_truth):
   print(f'{"Input:":15s}: {sentence}')
   print(f'{"Prediction":15s}: {tokens.numpy().decode("utf-8")}')
   print(f'{"Ground truth":15s}: {ground_truth}')
-
-
 
 sentence = "este é um problema que temos que resolver."
 ground_truth = "this is a problem we have to solve ."
@@ -1063,16 +957,11 @@ ground_truth = "this is a problem we have to solve ."
 translated_text, translated_tokens, attention_weights = evaluate(sentence)
 print_translation(sentence, translated_text, ground_truth)
 
-
-
 sentence = "os meus vizinhos ouviram sobre esta ideia."
 ground_truth = "and my neighboring homes heard about this idea ."
 
 translated_text, translated_tokens, attention_weights = evaluate(sentence)
 print_translation(sentence, translated_text, ground_truth)
-
-
-
 
 sentence = "vou então muito rapidamente partilhar convosco algumas histórias de algumas coisas mágicas que aconteceram."
 ground_truth = "so i \'ll just share with you some stories very quickly of some magical things that have happened ."
@@ -1080,6 +969,11 @@ ground_truth = "so i \'ll just share with you some stories very quickly of some 
 translated_text, translated_tokens, attention_weights = evaluate(sentence)
 print_translation(sentence, translated_text, ground_truth)
 
+sentence = "Heute ist das beste Wetter in Ruhpolding."
+ground_truth = "Today there is the best weather in Ruhpolding."
+
+translated_text, translated_tokens, attention_weights = evaluate(sentence)
+print_translation(sentence, translated_text, ground_truth)
 
 # You can pass different layers and attention blocks of the decoder to the `plot` parameter.
 
@@ -1087,15 +981,11 @@ print_translation(sentence, translated_text, ground_truth)
 
 # The `evaluate` function also returns a dictionary of attention maps you can use to visualize the internal working of the model:
 
-
 sentence = "este é o primeiro livro que eu fiz."
 ground_truth = "this is the first book i've ever done."
 
 translated_text, translated_tokens, attention_weights = evaluate(sentence)
 print_translation(sentence, translated_text, ground_truth)
-
-
-
 
 def plot_attention_head(in_tokens, translated_tokens, attention):
   # The plot is of the attention when a token was generated.
@@ -1114,9 +1004,6 @@ def plot_attention_head(in_tokens, translated_tokens, attention):
   labels = [label.decode('utf-8') for label in translated_tokens.numpy()]
   ax.set_yticklabels(labels)
 
-
-
-
 head = 0
 # shape: (batch=1, num_heads, seq_len_q, seq_len_k)
 attention_heads = tf.squeeze(
@@ -1124,26 +1011,15 @@ attention_heads = tf.squeeze(
 attention = attention_heads[head]
 attention.shape
 
-
-
-
 in_tokens = tf.convert_to_tensor([sentence])
 in_tokens = tokenizers.pt.tokenize(in_tokens).to_tensor()
 in_tokens = tokenizers.pt.lookup(in_tokens)[0]
 in_tokens
 
 
-
-
 translated_tokens
 
-
-
-
 plot_attention_head(in_tokens, translated_tokens, attention)
-
-
-
 
 def plot_attention_weights(sentence, translated_tokens, attention_heads):
   in_tokens = tf.convert_to_tensor([sentence])
@@ -1164,15 +1040,10 @@ def plot_attention_weights(sentence, translated_tokens, attention_heads):
   plt.show()
 
 
-
-
-
 plot_attention_weights(sentence, translated_tokens,
                        attention_weights['decoder_layer4_block2'][0])
 
-
 # The model does okay on unfamiliar words. Neither "triceratops" or "encyclopedia" are in the input dataset and the model almost learns to transliterate them, even without a shared vocabulary:
-
 
 sentence = "Eu li sobre triceratops na enciclopédia."
 ground_truth = "I read about triceratops in the encyclopedia."
