@@ -41,21 +41,12 @@ def createEnglishGermanSentenceDataSet():
     #np.save("Dataset_TED_English_German", numpyArray)
     print("DataSet was created!")
     trainIndex = int(0.85 * len(numpyArray))
+    trainIndex = 1000
     valIndex = int(0.9 * len(numpyArray))
     transposed = np.transpose(numpyArray)
     raw_train_ds = tf.data.Dataset.from_tensor_slices(((transposed[0][:trainIndex]), (transposed[1][:trainIndex])))
     raw_val_ds = tf.data.Dataset.from_tensor_slices((((transposed[0][trainIndex:valIndex]), (transposed[1][trainIndex:valIndex]))))
     raw_test_ds = tf.data.Dataset.from_tensor_slices(((transposed[0][valIndex:]), ((transposed[1][valIndex:]))))
-
-    # batched_train_ds = raw_train_ds.batch(batch_size)
-    # batched_val_ds = raw_val_ds.batch(batch_size)
-    # batched_test_ds = raw_test_ds.batch(batch_size)
-
-
-    # AUTOTUNE = tf.data.experimental.AUTOTUNE
-    # train_ds = batched_train_ds.cache().prefetch(buffer_size=AUTOTUNE)
-    # val_ds = batched_val_ds.cache().prefetch(buffer_size=AUTOTUNE)
-    # test_ds = batched_test_ds.cache().prefetch(buffer_size=AUTOTUNE)
     return (raw_train_ds, raw_val_ds)
 
 # ## Download the Dataset
@@ -71,14 +62,13 @@ def createEnglishGermanSentenceDataSet():
 (train_examples, val_examples) = createEnglishGermanSentenceDataSet()
 
 # The `tf.data.Dataset` object returned by TensorFlow datasets yields pairs of text examples:
-for pt_examples, en_examples in train_examples.batch(3).take(1):
-  for pt in pt_examples.numpy():
-    print(pt.decode('utf-8'))
-
-  print()
-
+for en_examples, de_examples in train_examples.batch(3).take(1):
   for en in en_examples.numpy():
     print(en.decode('utf-8'))
+
+
+  for de in de_examples.numpy():
+    print(de.decode('utf-8'))
 
 # ## Text tokenization & detokenization
 # You can't train a model directly on text. The text needs to be converted to some numeric representation first. Typically, you convert the text to sequences of token IDs, which are as indexes into an embedding.
@@ -86,39 +76,36 @@ for pt_examples, en_examples in train_examples.batch(3).take(1):
 # 
 # Download and unzip and import the `saved_model`:
 
-model_name = "ted_hrlr_translate_pt_en_converter"
-tf.keras.utils.get_file(
-    f"{model_name}.zip",
-    f"https://storage.googleapis.com/download.tensorflow.org/models/{model_name}.zip",
-    cache_dir='.', cache_subdir='', extract=True
-)
-
+#model_name = "ted_hrlr_translate_pt_en_converter"
+#tf.keras.utils.get_file(
+    #f"{model_name}.zip",
+    #f"https://storage.googleapis.com/download.tensorflow.org/models/{model_name}.zip",
+    #cache_dir='.', cache_subdir='', extract=True
+#)
+model_name = 'Translation_Model/tokenizer'
 
 tokenizers = tf.saved_model.load(model_name)
 
 # The `tf.saved_model` contains two text tokenizers, one for English and one for Portuguese. Both have the same methods:
 
-[item for item in dir(tokenizers.en) if not item.startswith('_')]
+[item for item in dir(tokenizers.de) if not item.startswith('_')]
 
 # The `tokenize` method converts a batch of strings to a padded-batch of token IDs. This method splits punctuation, lowercases and unicode-normalizes the input before tokenizing. That standardization is not visible here because the input data is already standardized.
 
-for en in en_examples.numpy():
-  print(en.decode('utf-8'))
-
-encoded = tokenizers.en.tokenize(en_examples)
+encoded = tokenizers.de.tokenize(de_examples)
 
 for row in encoded.to_list():
   print(row)
 
 # The `detokenize` method attempts to convert these token IDs back to human readable text: 
 
-round_trip = tokenizers.en.detokenize(encoded)
+round_trip = tokenizers.de.detokenize(encoded)
 for line in round_trip.numpy():
   print(line.decode('utf-8'))
 
 # The lower level `lookup` method converts from token-IDs to token text:
 
-tokens = tokenizers.en.lookup(encoded)
+tokens = tokenizers.de.lookup(encoded)
 tokens
 
 # Here you can see the "subword" aspect of the tokenizers. The word "searchability" is decomposed into "search ##ability" and the word "serindipity" into "s ##ere ##nd ##ip ##ity"
@@ -129,21 +116,21 @@ tokens
 # 
 # This function will be used to encode the batches of raw text:
 
-def tokenize_pairs(pt, en):
-    pt = tokenizers.pt.tokenize(pt)
-    # Convert from ragged to dense, padding with zeros.
-    pt = pt.to_tensor()
-
+def tokenize_pairs(en, de):
     en = tokenizers.en.tokenize(en)
     # Convert from ragged to dense, padding with zeros.
     en = en.to_tensor()
-    return pt, en
+
+    de = tokenizers.de.tokenize(de)
+    # Convert from ragged to dense, padding with zeros.
+    de = de.to_tensor()
+    return en, de 
 
 
 # Here's a simple input pipeline that processes, shuffles and batches the data:
 
 BUFFER_SIZE = 20000
-BATCH_SIZE = 4
+BATCH_SIZE = 8
 
 def make_batches(ds):
   return (
@@ -772,8 +759,8 @@ transformer = Transformer(
     d_model=d_model,
     num_heads=num_heads,
     dff=dff,
-    input_vocab_size=tokenizers.pt.get_vocab_size(),
-    target_vocab_size=tokenizers.en.get_vocab_size(),
+    input_vocab_size=tokenizers.en.get_vocab_size(),
+    target_vocab_size=tokenizers.de.get_vocab_size(),
     pe_input=1000,
     pe_target=1000,
     rate=dropout_rate)
@@ -798,7 +785,7 @@ def create_masks(inp, tar):
 
 # Create the checkpoint path and the checkpoint manager. This will be used to save checkpoints every `n` epochs.
 
-checkpoint_path = "./checkpoints/train"
+checkpoint_path = "Translation_Model/Model/Checkpoints/"
 
 ckpt = tf.train.Checkpoint(transformer=transformer,
                            optimizer=optimizer)
@@ -879,9 +866,8 @@ for epoch in range(EPOCHS):
     if batch % 50 == 0:
       print(f'Epoch {epoch + 1} Batch {batch} Loss {train_loss.result():.4f} Accuracy {train_accuracy.result():.4f}')
 
-  if (epoch + 1) % 5 == 0:
-    ckpt_save_path = ckpt_manager.save()
-    print(f'Saving checkpoint for epoch {epoch+1} at {ckpt_save_path}')
+  ckpt_save_path = ckpt_manager.save()
+  print(f'Saving checkpoint for epoch {epoch+1} at {ckpt_save_path}')
 
   print(f'Epoch {epoch + 1} Loss {train_loss.result():.4f} Accuracy {train_accuracy.result():.4f}')
 

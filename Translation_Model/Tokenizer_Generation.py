@@ -6,7 +6,6 @@ import string
 import sys
 import tempfile
 import time
-
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -17,20 +16,46 @@ import tensorflow as tf
 tf.get_logger().setLevel('ERROR')
 pwd = pathlib.Path.cwd()
 
+def createEnglishGermanSentenceDataSet():
+    dataSet = []
+    germanSentence = ""
+    englishSentence = ""
+    isGerman = False
+    counter = 1
+    with open("Dataset_TED_English_German.txt", encoding="utf8") as file:
+        for line in file:
+            #An empty line indicates a new pair of English and German sentences 
+            if(line == "\n"):
+                dataSet.append([englishSentence, germanSentence])
+            elif(isGerman):
+                germanSentence = line
+                isGerman = False
+            else: 
+                englishSentence = line
+                isGerman = True
+
+    numpyArray = np.array(dataSet)
+    #np.save("Dataset_TED_English_German", numpyArray)
+    print("DataSet was created!")
+    trainIndex = int(0.85 * len(numpyArray))
+    valIndex = int(0.9 * len(numpyArray))
+    transposed = np.transpose(numpyArray)
+    raw_train_ds = tf.data.Dataset.from_tensor_slices(((transposed[0][:trainIndex]), (transposed[1][:trainIndex])))
+    raw_val_ds = tf.data.Dataset.from_tensor_slices((((transposed[0][trainIndex:valIndex]), (transposed[1][trainIndex:valIndex]))))
+    raw_test_ds = tf.data.Dataset.from_tensor_slices(((transposed[0][valIndex:]), ((transposed[1][valIndex:]))))
+    return (raw_train_ds, raw_val_ds)
+
+#examples, metadata = tfds.load('ted_hrlr_translate/pt_to_en', with_info=True,
+                               ##as_supervised=True)
+(train_examples, val_examples) = createEnglishGermanSentenceDataSet()
 
 
+for en, de in train_examples.take(1):
+  print("English: ", en.numpy().decode('utf-8'))
+  print("German:   ", de.numpy().decode('utf-8'))
 
-examples, metadata = tfds.load('ted_hrlr_translate/pt_to_en', with_info=True,
-                               as_supervised=True)
-train_examples, val_examples = examples['train'], examples['validation']
-
-
-for pt, en in train_examples.take(1):
-  print("Portuguese: ", pt.numpy().decode('utf-8'))
-  print("English:   ", en.numpy().decode('utf-8'))
-
-train_en = train_examples.map(lambda pt, en: en)
-train_pt = train_examples.map(lambda pt, en: pt)
+train_de = train_examples.map(lambda en, de: de)
+train_en = train_examples.map(lambda en, de: en)
 
 from tensorflow_text.tools.wordpiece_vocab import bert_vocab_from_dataset as bert_vocab
 
@@ -50,25 +75,6 @@ bert_vocab_args = dict(
 
 
 
-pt_vocab = bert_vocab.bert_vocab_from_dataset(
-    train_pt.batch(1000).prefetch(2),
-    **bert_vocab_args
-)
-
-print(pt_vocab[:10])
-print(pt_vocab[100:110])
-print(pt_vocab[1000:1010])
-print(pt_vocab[-10:])
-
-
-def write_vocab_file(filepath, vocab):
-  with open(filepath, 'w') as f:
-    for token in vocab:
-      print(token, file=f)
-
-write_vocab_file('pt_vocab.txt', pt_vocab)
-
-
 en_vocab = bert_vocab.bert_vocab_from_dataset(
     train_en.batch(1000).prefetch(2),
     **bert_vocab_args
@@ -79,18 +85,37 @@ print(en_vocab[100:110])
 print(en_vocab[1000:1010])
 print(en_vocab[-10:])
 
+
+def write_vocab_file(filepath, vocab):
+  with open(filepath, 'w', encoding="utf8") as f:
+    for token in vocab:
+      print(token, file=f)
+
 write_vocab_file('en_vocab.txt', en_vocab)
 
 
-pt_tokenizer = text.BertTokenizer('pt_vocab.txt', **bert_tokenizer_params)
-en_tokenizer = text.BertTokenizer('en_vocab.txt', **bert_tokenizer_params)
+de_vocab = bert_vocab.bert_vocab_from_dataset(
+    train_de.batch(1000).prefetch(2),
+    **bert_vocab_args
+)
 
-for pt_examples, en_examples in train_examples.batch(3).take(1):
-  for ex in en_examples:
+print(de_vocab[:10])
+print(de_vocab[100:110])
+print(de_vocab[1000:1010])
+print(de_vocab[-10:])
+
+write_vocab_file('de_vocab.txt', de_vocab)
+
+
+en_tokenizer = text.BertTokenizer('en_vocab.txt', **bert_tokenizer_params)
+de_tokenizer = text.BertTokenizer('de_vocab.txt', **bert_tokenizer_params)
+
+for en_examples, de_examples in train_examples.batch(3).take(1):
+  for ex in de_examples:
     print(ex.numpy())
 
 # Tokenize the examples -> (batch, word, word-piece)
-token_batch = en_tokenizer.tokenize(en_examples)
+token_batch = de_tokenizer.tokenize(de_examples)
 # Merge the word and word-piece axes -> (batch, tokens)
 token_batch = token_batch.merge_dims(-2,-1)
 
@@ -98,11 +123,11 @@ for ex in token_batch.to_list():
   print(ex)
 
 # Lookup each token id in the vocabulary.
-txt_tokens = tf.gather(en_vocab, token_batch)
+txt_tokens = tf.gather(de_vocab, token_batch)
 # Join with spaces.
 tf.strings.reduce_join(txt_tokens, separator=' ', axis=-1)
 
-words = en_tokenizer.detokenize(token_batch)
+words = de_tokenizer.detokenize(token_batch)
 tf.strings.reduce_join(words, separator=' ', axis=-1)
 
 START = tf.argmax(tf.constant(reserved_tokens) == "[START]")
@@ -114,11 +139,11 @@ def add_start_end(ragged):
   ends = tf.fill([count,1], END)
   return tf.concat([starts, ragged, ends], axis=1)
 
-words = en_tokenizer.detokenize(add_start_end(token_batch))
+words = de_tokenizer.detokenize(add_start_end(token_batch))
 tf.strings.reduce_join(words, separator=' ', axis=-1)
 
 def cleanup_text(reserved_tokens, token_txt):
-  # Drop the reserved tokens, except for "[UNK]".
+  # Drop the reserved tokens, exceen for "[UNK]".
   bad_tokens = [re.escape(tok) for tok in reserved_tokens if tok != "[UNK]"]
   bad_token_re = "|".join(bad_tokens)
 
@@ -130,11 +155,11 @@ def cleanup_text(reserved_tokens, token_txt):
 
   return result
 
-en_examples.numpy()
+de_examples.numpy()
 
 
-token_batch = en_tokenizer.tokenize(en_examples).merge_dims(-2,-1)
-words = en_tokenizer.detokenize(token_batch)
+token_batch = de_tokenizer.tokenize(en_examples).merge_dims(-2,-1)
+words = de_tokenizer.detokenize(token_batch)
 words
 
 cleanup_text(reserved_tokens, words).numpy()
@@ -146,7 +171,7 @@ class CustomTokenizer(tf.Module):
     self._reserved_tokens = reserved_tokens
     self._vocab_path = tf.saved_model.Asset(vocab_path)
 
-    vocab = pathlib.Path(vocab_path).read_text().splitlines()
+    vocab = pathlib.Path(vocab_path).read_text(encoding="utf8").splitlines()
     self.vocab = tf.Variable(vocab)
 
     ## Create the signatures for export:   
@@ -204,8 +229,8 @@ class CustomTokenizer(tf.Module):
 
 
 tokenizers = tf.Module()
-tokenizers.pt = CustomTokenizer(reserved_tokens, 'pt_vocab.txt')
 tokenizers.en = CustomTokenizer(reserved_tokens, 'en_vocab.txt')
+tokenizers.de = CustomTokenizer(reserved_tokens, 'de_vocab.txt')
 
 model_name = 'testModel'
 tf.saved_model.save(tokenizers, model_name)
@@ -213,13 +238,13 @@ tf.saved_model.save(tokenizers, model_name)
 reloaded_tokenizers = tf.saved_model.load(model_name)
 reloaded_tokenizers.en.get_vocab_size().numpy()
 
-tokens = reloaded_tokenizers.en.tokenize(['Hello TensorFlow!'])
+tokens = reloaded_tokenizers.de.tokenize(['Hello TensorFlow!'])
 tokens.numpy()
 
-text_tokens = reloaded_tokenizers.en.lookup(tokens)
+text_tokens = reloaded_tokenizers.de.lookup(tokens)
 text_tokens
 
-round_trip = reloaded_tokenizers.en.detokenize(tokens)
+round_trip = reloaded_tokenizers.de.detokenize(tokens)
 
 print(round_trip.numpy()[0].decode('utf-8'))
 

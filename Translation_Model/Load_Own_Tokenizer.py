@@ -19,16 +19,40 @@ from tensorflow_text.tools.wordpiece_vocab import bert_vocab_from_dataset as ber
 bert_tokenizer_params=dict(lower_case=True)
 reserved_tokens=["[PAD]", "[UNK]", "[START]", "[END]"]
 
-pt_tokenizer = text.BertTokenizer('pt_vocab.txt', **bert_tokenizer_params)
-en_tokenizer = text.BertTokenizer('en_vocab.txt', **bert_tokenizer_params)
+path1 = 'C:\\Users\\Phil\\Documents\\Uni\\4. Semester\\NLP_project_on_tweets_of_German_politicians\\en_vocab.txt'
+path2 = 'C:\\Users\\Phil\\Documents\\Uni\\4. Semester\\NLP_project_on_tweets_of_German_politicians\\de_vocab.txt'
+pt_tokenizer = text.BertTokenizer(path1, **bert_tokenizer_params)
+en_tokenizer = text.BertTokenizer(path2, **bert_tokenizer_params)
 
+START = tf.argmax(tf.constant(reserved_tokens) == "[START]")
+END = tf.argmax(tf.constant(reserved_tokens) == "[END]")
+
+def add_start_end(ragged):
+  count = ragged.bounding_shape()[0]
+  starts = tf.fill([count,1], START)
+  ends = tf.fill([count,1], END)
+  return tf.concat([starts, ragged, ends], axis=1)
+
+
+def cleanup_text(reserved_tokens, token_txt):
+  # Drop the reserved tokens, except for "[UNK]".
+  bad_tokens = [re.escape(tok) for tok in reserved_tokens if tok != "[UNK]"]
+  bad_token_re = "|".join(bad_tokens)
+
+  bad_cells = tf.strings.regex_full_match(token_txt, bad_token_re)
+  result = tf.ragged.boolean_mask(token_txt, ~bad_cells)
+
+  # Join them into strings.
+  result = tf.strings.reduce_join(result, separator=' ', axis=-1)
+
+  return result
 class CustomTokenizer(tf.Module):
   def __init__(self, reserved_tokens, vocab_path):
     self.tokenizer = text.BertTokenizer(vocab_path, lower_case=True)
     self._reserved_tokens = reserved_tokens
     self._vocab_path = tf.saved_model.Asset(vocab_path)
 
-    vocab = pathlib.Path(vocab_path).read_text().splitlines()
+    vocab = pathlib.Path(vocab_path).read_text(encoding='utf8').splitlines()
     self.vocab = tf.Variable(vocab)
 
     ## Create the signatures for export:   
@@ -86,10 +110,10 @@ class CustomTokenizer(tf.Module):
 
 
 tokenizers = tf.Module()
-tokenizers.pt = CustomTokenizer(reserved_tokens, 'pt_vocab.txt')
-tokenizers.en = CustomTokenizer(reserved_tokens, 'en_vocab.txt')
+tokenizers.pt = CustomTokenizer(reserved_tokens, path1)
+tokenizers.en = CustomTokenizer(reserved_tokens, path2)
 
-model_name = 'ted_hrlr_translate_pt_en_converter'
+model_name = 'testModel'
 tf.saved_model.save(tokenizers, model_name)
 
 reloaded_tokenizers = tf.saved_model.load(model_name)
@@ -104,8 +128,4 @@ text_tokens
 round_trip = reloaded_tokenizers.en.detokenize(tokens)
 
 print(round_trip.numpy()[0].decode('utf-8'))
-
-
-
-
 
