@@ -25,7 +25,7 @@ def createEnglishGermanSentenceDataSet():
     englishSentence = ""
     isGerman = False
     counter = 1
-    with open("Dataset_TED_English_German.txt", encoding="utf8") as file:
+    with open("Translation_Model/Dataset_TED_English_German.txt", encoding="utf8") as file:
         for line in file:
             #An empty line indicates a new pair of English and German sentences 
             if(line == "\n"):
@@ -41,7 +41,6 @@ def createEnglishGermanSentenceDataSet():
     #np.save("Dataset_TED_English_German", numpyArray)
     print("DataSet was created!")
     trainIndex = int(0.85 * len(numpyArray))
-    trainIndex = 1000
     valIndex = int(0.9 * len(numpyArray))
     transposed = np.transpose(numpyArray)
     raw_train_ds = tf.data.Dataset.from_tensor_slices(((transposed[0][:trainIndex]), (transposed[1][:trainIndex])))
@@ -130,7 +129,7 @@ def tokenize_pairs(en, de):
 # Here's a simple input pipeline that processes, shuffles and batches the data:
 
 BUFFER_SIZE = 20000
-BATCH_SIZE = 8
+BATCH_SIZE = 12
 
 def make_batches(ds):
   return (
@@ -814,7 +813,7 @@ if ckpt_manager.latest_checkpoint:
 # 
 # To prevent the model from peeking at the expected output the model uses a look-ahead mask.
 
-EPOCHS = 10
+EPOCHS = 30
 
 # The @tf.function trace-compiles train_step into a TF graph for faster
 # execution. The function specializes to the precise shape of the argument
