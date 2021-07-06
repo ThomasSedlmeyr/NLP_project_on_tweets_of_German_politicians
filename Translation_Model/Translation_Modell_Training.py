@@ -188,7 +188,7 @@ plt.pcolormesh(pos_encoding, cmap='RdBu')
 plt.ylabel('Depth')
 plt.xlabel('Position')
 plt.colorbar()
-plt.show()
+#plt.show()
 
 
 # ## Masking
@@ -789,7 +789,7 @@ checkpoint_path = "Translation_Model/Model/Checkpoints/"
 ckpt = tf.train.Checkpoint(transformer=transformer,
                            optimizer=optimizer)
 
-ckpt_manager = tf.train.CheckpointManager(ckpt, checkpoint_path, max_to_keep=5)
+ckpt_manager = tf.train.CheckpointManager(ckpt, checkpoint_path, max_to_keep=10000)
 
 # if a checkpoint exists, restore the latest checkpoint.
 if ckpt_manager.latest_checkpoint:
@@ -851,26 +851,30 @@ def train_step(inp, tar):
 
 # Portuguese is used as the input language and English is the target language.
 
-print("Training startet")
-for epoch in range(EPOCHS):
-  start = time.time()
 
-  train_loss.reset_states()
-  train_accuracy.reset_states()
+def train():
+  print("Training startet")
+  for epoch in range(EPOCHS):
+    start = time.time()
 
-  # inp -> portuguese, tar -> english
-  for (batch, (inp, tar)) in enumerate(train_batches):
-    train_step(inp, tar)
+    train_loss.reset_states()
+    train_accuracy.reset_states()
 
-    if batch % 50 == 0:
-      print(f'Epoch {epoch + 1} Batch {batch} Loss {train_loss.result():.4f} Accuracy {train_accuracy.result():.4f}')
+    # inp -> portuguese, tar -> english
+    for (batch, (inp, tar)) in enumerate(train_batches):
+      train_step(inp, tar)
 
-  ckpt_save_path = ckpt_manager.save()
-  print(f'Saving checkpoint for epoch {epoch+1} at {ckpt_save_path}')
+      if batch % 50 == 0:
+        print(f'Epoch {epoch + 1} Batch {batch} Loss {train_loss.result():.4f} Accuracy {train_accuracy.result():.4f}')
 
-  print(f'Epoch {epoch + 1} Loss {train_loss.result():.4f} Accuracy {train_accuracy.result():.4f}')
+    ckpt_save_path = ckpt_manager.save()
+    print(f'Saving checkpoint for epoch {epoch+1} at {ckpt_save_path}')
 
-  print(f'Time taken for 1 epoch: {time.time() - start:.2f} secs\n')
+    print(f'Epoch {epoch + 1} Loss {train_loss.result():.4f} Accuracy {train_accuracy.result():.4f}')
+
+    print(f'Time taken for 1 epoch: {time.time() - start:.2f} secs\n')
+    evaluateEnglishGerman()
+
 
 
 # ## Evaluate
@@ -889,13 +893,13 @@ for epoch in range(EPOCHS):
 def evaluate(sentence, max_length=40):
   # inp sentence is portuguese, hence adding the start and end token
   sentence = tf.convert_to_tensor([sentence])
-  sentence = tokenizers.pt.tokenize(sentence).to_tensor()
+  sentence = tokenizers.en.tokenize(sentence).to_tensor()
 
   encoder_input = sentence
 
   # as the target is english, the first word to the transformer should be the
   # english start token.
-  start, end = tokenizers.en.tokenize([''])[0]
+  start, end = tokenizers.de.tokenize([''])[0]
   output = tf.convert_to_tensor([start])
   output = tf.expand_dims(output, 0)
 
@@ -925,52 +929,24 @@ def evaluate(sentence, max_length=40):
       break
 
   # output.shape (1, tokens)
-  text = tokenizers.en.detokenize(output)[0]  # shape: ()
+  text = tokenizers.de.detokenize(output)[0]  # shape: ()
 
-  tokens = tokenizers.en.lookup(output)[0]
+  tokens = tokenizers.de.lookup(output)[0]
 
   return text, tokens, attention_weights
+
+def saveTranslationToFile(file, sentence, tokens, ground_truth):
+  file.write(f'{"Input:":15s}: {sentence}')
+  file.write('\n')
+  file.write(f'{"Prediction":15s}: {tokens.numpy().decode("utf-8")}')
+  file.write('\n')
+  file.write(f'{"Ground truth":15s}: {ground_truth}')
+  file.write('\n\n')
 
 def print_translation(sentence, tokens, ground_truth):
   print(f'{"Input:":15s}: {sentence}')
   print(f'{"Prediction":15s}: {tokens.numpy().decode("utf-8")}')
   print(f'{"Ground truth":15s}: {ground_truth}')
-
-sentence = "este é um problema que temos que resolver."
-ground_truth = "this is a problem we have to solve ."
-
-translated_text, translated_tokens, attention_weights = evaluate(sentence)
-print_translation(sentence, translated_text, ground_truth)
-
-sentence = "os meus vizinhos ouviram sobre esta ideia."
-ground_truth = "and my neighboring homes heard about this idea ."
-
-translated_text, translated_tokens, attention_weights = evaluate(sentence)
-print_translation(sentence, translated_text, ground_truth)
-
-sentence = "vou então muito rapidamente partilhar convosco algumas histórias de algumas coisas mágicas que aconteceram."
-ground_truth = "so i \'ll just share with you some stories very quickly of some magical things that have happened ."
-
-translated_text, translated_tokens, attention_weights = evaluate(sentence)
-print_translation(sentence, translated_text, ground_truth)
-
-sentence = "Heute ist das beste Wetter in Ruhpolding."
-ground_truth = "Today there is the best weather in Ruhpolding."
-
-translated_text, translated_tokens, attention_weights = evaluate(sentence)
-print_translation(sentence, translated_text, ground_truth)
-
-# You can pass different layers and attention blocks of the decoder to the `plot` parameter.
-
-# ## Attention plots
-
-# The `evaluate` function also returns a dictionary of attention maps you can use to visualize the internal working of the model:
-
-sentence = "este é o primeiro livro que eu fiz."
-ground_truth = "this is the first book i've ever done."
-
-translated_text, translated_tokens, attention_weights = evaluate(sentence)
-print_translation(sentence, translated_text, ground_truth)
 
 def plot_attention_head(in_tokens, translated_tokens, attention):
   # The plot is of the attention when a token was generated.
@@ -989,27 +965,11 @@ def plot_attention_head(in_tokens, translated_tokens, attention):
   labels = [label.decode('utf-8') for label in translated_tokens.numpy()]
   ax.set_yticklabels(labels)
 
-head = 0
-# shape: (batch=1, num_heads, seq_len_q, seq_len_k)
-attention_heads = tf.squeeze(
-  attention_weights['decoder_layer4_block2'], 0)
-attention = attention_heads[head]
-attention.shape
-
-in_tokens = tf.convert_to_tensor([sentence])
-in_tokens = tokenizers.pt.tokenize(in_tokens).to_tensor()
-in_tokens = tokenizers.pt.lookup(in_tokens)[0]
-in_tokens
-
-
-translated_tokens
-
-plot_attention_head(in_tokens, translated_tokens, attention)
 
 def plot_attention_weights(sentence, translated_tokens, attention_heads):
   in_tokens = tf.convert_to_tensor([sentence])
-  in_tokens = tokenizers.pt.tokenize(in_tokens).to_tensor()
-  in_tokens = tokenizers.pt.lookup(in_tokens)[0]
+  in_tokens = tokenizers.en.tokenize(in_tokens).to_tensor()
+  in_tokens = tokenizers.en.lookup(in_tokens)[0]
   in_tokens
 
   fig = plt.figure(figsize=(16, 8))
@@ -1025,20 +985,53 @@ def plot_attention_weights(sentence, translated_tokens, attention_heads):
   plt.show()
 
 
-plot_attention_weights(sentence, translated_tokens,
-                       attention_weights['decoder_layer4_block2'][0])
+def evaluateEnglishGerman():
+  f = open("Translation_Model/Model/evaluation.txt", "a")
 
-# The model does okay on unfamiliar words. Neither "triceratops" or "encyclopedia" are in the input dataset and the model almost learns to transliterate them, even without a shared vocabulary:
+  sentence = "Because living so healthily was killing me."
+  ground_truth = "Denn dieses gesunde Leben brachte mich allmählich um."
+  translated_text, translated_tokens, attention_weights = evaluate(sentence)
+  saveTranslationToFile(f, sentence, translated_text, ground_truth)
 
-sentence = "Eu li sobre triceratops na enciclopédia."
-ground_truth = "I read about triceratops in the encyclopedia."
+  sentence = "I had to do that properly."
+  ground_truth = "Das musste ich anständig machen."
+  translated_text, translated_tokens, attention_weights = evaluate(sentence)
+  saveTranslationToFile(f, sentence, translated_text, ground_truth)
 
-translated_text, translated_tokens, attention_weights = evaluate(sentence)
-print_translation(sentence, translated_text, ground_truth)
+  sentence = "I've spent the last decade subjecting myself to pain and humiliation, hopefully for a good cause, which is self-improvement."
+  ground_truth = "Das letzte Jahrzehnt habe ich damit verbracht, mich Schmerz und Demütigung auszusetzen, hoffentlich für eine gute Sache, die Selbstvervollkommnung."
+  translated_text, translated_tokens, attention_weights = evaluate(sentence)
+  saveTranslationToFile(f, sentence, translated_text, ground_truth)
 
-plot_attention_weights(sentence, translated_tokens,
-                       attention_weights['decoder_layer4_block2'][0])
+  sentence = "But they also told us that the story of the Chibok girls was a hoax."
+  ground_truth = "Aber sie erzählten uns auch, dass die Geschichte der Mädchen aus Chibok eine Falschmeldung wäre."
+  translated_text, translated_tokens, attention_weights = evaluate(sentence)
+  saveTranslationToFile(f, sentence, translated_text, ground_truth)
 
+  sentence = "We have facts to prove that if we invest in women and girls and provide them with better health and well-being, they will deliver healthier and wealthier and prosperous communities."
+  ground_truth = "Wir können mit Fakten belegen, dass die Investition in Frauen und Mädchen und ihre Gesundheit und Wohlbefinden gesündere, wohlhabendere und erfolgreiche Gemeinschaften hervorbringt."
+  translated_text, translated_tokens, attention_weights = evaluate(sentence)
+  saveTranslationToFile(f, sentence, translated_text, ground_truth)
+
+  sentence = "This is my bit of light."
+  ground_truth = "Dies ist mein kleines Licht."
+  translated_text, translated_tokens, attention_weights = evaluate(sentence)
+  saveTranslationToFile(f, sentence, translated_text, ground_truth)
+
+  ground_truth = "I like studying at TUM"
+  sentence = "Ich liebe es an der TUM zu studieren"
+  translated_text, translated_tokens, attention_weights = evaluate(sentence)
+  saveTranslationToFile(f, sentence, translated_text, ground_truth)
+
+  sentence = "Today there is the best weather in Ruhpolding."
+  ground_truth = "Heute ist das beste Wetter in Ruhpolding."
+  translated_text, translated_tokens, attention_weights = evaluate(sentence)
+  saveTranslationToFile(f, sentence, translated_text, ground_truth)
+  f.write("----------------------------------------------------------------------------------------------------\n")
+  f.close()
+#evaluateEnglishGerman()
+#example()
+train()
 print("Fertig")
 # ## Summary
 # 
