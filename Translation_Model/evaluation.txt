@@ -1,0 +1,667 @@
+Input:         : Because living so healthily was killing me.
+Prediction     : behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln
+Ground truth   : Denn dieses gesunde Leben brachte mich allmählich um.
+
+Input:         : I had to do that properly.
+Prediction     : behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln wesentlich wesentlich wesentlich wesentlich wesentlich wesentlich wesentlich wesentlich wesentlich wesentlich wesentlich wesentlich wesentlich wesentlich wesentlich wesentlich wesentlich wesentlich wesentlich wesentlich wesentlich wesentlich wesentlich wesentlich wesentlich wesentlich wesentlich
+Ground truth   : Das musste ich anständig machen.
+
+Input:         : I've spent the last decade subjecting myself to pain and humiliation, hopefully for a good cause, which is self-improvement.
+Prediction     : erhohenochochochochochochochochoch erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen
+Ground truth   : Das letzte Jahrzehnt habe ich damit verbracht, mich Schmerz und Demütigung auszusetzen, hoffentlich für eine gute Sache, die Selbstvervollkommnung.
+
+Input:         : But they also told us that the story of the Chibok girls was a hoax.
+Prediction     : [START]ochochochochochochochochoch redet redet redet redet redetochochochochochochochochochochochochochochochochoch redet redet redet redet redet redet redet redet redet
+Ground truth   : Aber sie erzählten uns auch, dass die Geschichte der Mädchen aus Chibok eine Falschmeldung wäre.
+
+Input:         : We have facts to prove that if we invest in women and girls and provide them with better health and well-being, they will deliver healthier and wealthier and prosperous communities.
+Prediction     : erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen erhohen
+Ground truth   : Wir können mit Fakten belegen, dass die Investition in Frauen und Mädchen und ihre Gesundheit und Wohlbefinden gesündere, wohlhabendere und erfolgreiche Gemeinschaften hervorbringt.
+
+Input:         : This is my bit of light.
+Prediction     : behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln
+Ground truth   : Dies ist mein kleines Licht.
+
+Input:         : Today there is the best weather in Ruhpolding.
+Prediction     : [START]ochochochochoch behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln behandeln wesentlich wesentlich wesentlich wesentlich wesentlich wesentlich wesentlich behandeln behandeln
+Ground truth   : Heute ist das beste Wetter in Ruhpolding.
+
+----------------------------------------------------------------------------------------------------
+Input:         : Because living so healthily was killing me.
+Prediction     : es war nicht nur die menschen .
+Ground truth   : Denn dieses gesunde Leben brachte mich allmählich um.
+
+Input:         : I had to do that properly.
+Prediction     : ich hatte mich in der geschichte .
+Ground truth   : Das musste ich anständig machen.
+
+Input:         : I've spent the last decade subjecting myself to pain and humiliation, hopefully for a good cause, which is self-improvement.
+Prediction     : ich bin ein teil der welt , und ich habe eine art von menschen , die sich in der welt in der welt befahrt .
+Ground truth   : Das letzte Jahrzehnt habe ich damit verbracht, mich Schmerz und Demütigung auszusetzen, hoffentlich für eine gute Sache, die Selbstvervollkommnung.
+
+Input:         : But they also told us that the story of the Chibok girls was a hoax.
+Prediction     : es war sehr schwer , dass es nicht mehr gab , dass es sich nicht mehr in der lage war .
+Ground truth   : Aber sie erzählten uns auch, dass die Geschichte der Mädchen aus Chibok eine Falschmeldung wäre.
+
+Input:         : We have facts to prove that if we invest in women and girls and provide them with better health and well-being, they will deliver healthier and wealthier and prosperous communities.
+Prediction     : wir haben mehr als mehr als mehr als mehr als mehr als mehr als mehr als mehr als mehr als mehr als mehr als mehr als mehr als mehr als mehr als mehr als mehr als mehr als mehr als
+Ground truth   : Wir können mit Fakten belegen, dass die Investition in Frauen und Mädchen und ihre Gesundheit und Wohlbefinden gesündere, wohlhabendere und erfolgreiche Gemeinschaften hervorbringt.
+
+Input:         : This is my bit of light.
+Prediction     : das ist die geschichte .
+Ground truth   : Dies ist mein kleines Licht.
+
+Input:         : Today there is the best weather in Ruhpolding.
+Prediction     : das ist ein sehr wenig , dass wir das hier in der geschichte in der geschichte .
+Ground truth   : Heute ist das beste Wetter in Ruhpolding.
+
+----------------------------------------------------------------------------------------------------
+Input:         : Because living so healthily was killing me.
+Prediction     : aber die menschen , die ich in der schule war .
+Ground truth   : Denn dieses gesunde Leben brachte mich allmählich um.
+
+Input:         : I had to do that properly.
+Prediction     : ich war so , dass ich mich nicht leisten konnte .
+Ground truth   : Das musste ich anständig machen.
+
+Input:         : I've spent the last decade subjecting myself to pain and humiliation, hopefully for a good cause, which is self-improvement.
+Prediction     : ich bin in der welt , in der ich mich in der welt und in der welt , in der ich meine , die ich in der welt habe , die die welt , die ich in der welt v
+Ground truth   : Das letzte Jahrzehnt habe ich damit verbracht, mich Schmerz und Demütigung auszusetzen, hoffentlich für eine gute Sache, die Selbstvervollkommnung.
+
+Input:         : But they also told us that the story of the Chibok girls was a hoax.
+Prediction     : und es war eine sehr interessante sache , die wir uns nicht in der schule hatten , und es war eine sehr interessante sache .
+Ground truth   : Aber sie erzählten uns auch, dass die Geschichte der Mädchen aus Chibok eine Falschmeldung wäre.
+
+Input:         : We have facts to prove that if we invest in women and girls and provide them with better health and well-being, they will deliver healthier and wealthier and prosperous communities.
+Prediction     : wir haben uns mit uns und frauen und frauen , die uns helfen , ihre kinder zu helfen , ihre kinder zu helfen und ihre kinder zu helfen und ihre kinder zu helfen und ihre kinder zu helfen , ihre
+Ground truth   : Wir können mit Fakten belegen, dass die Investition in Frauen und Mädchen und ihre Gesundheit und Wohlbefinden gesündere, wohlhabendere und erfolgreiche Gemeinschaften hervorbringt.
+
+Input:         : This is my bit of light.
+Prediction     : das ist mein vater .
+Ground truth   : Dies ist mein kleines Licht.
+
+Input:         : Today there is the best weather in Ruhpolding.
+Prediction     : das ist ein sehr interessantes beispiel .
+Ground truth   : Heute ist das beste Wetter in Ruhpolding.
+
+----------------------------------------------------------------------------------------------------
+Input:         : Because living so healthily was killing me.
+Prediction     : aber meine eltern waren sehr wichtig .
+Ground truth   : Denn dieses gesunde Leben brachte mich allmählich um.
+
+Input:         : I had to do that properly.
+Prediction     : ich hatte das schon .
+Ground truth   : Das musste ich anständig machen.
+
+Input:         : I've spent the last decade subjecting myself to pain and humiliation, hopefully for a good cause, which is self-improvement.
+Prediction     : ich habe die welt , die ich in der schule verabschiedet habe , und die meisten von uns , die ich als eine art von schul - und der welt in der schule
+Ground truth   : Das letzte Jahrzehnt habe ich damit verbracht, mich Schmerz und Demütigung auszusetzen, hoffentlich für eine gute Sache, die Selbstvervollkommnung.
+
+Input:         : But they also told us that the story of the Chibok girls was a hoax.
+Prediction     : und wir waren sehr alt , denn es war eine sehr interessante , sehr grosse , sehr grosse , sehr grosse , sehr gut .
+Ground truth   : Aber sie erzählten uns auch, dass die Geschichte der Mädchen aus Chibok eine Falschmeldung wäre.
+
+Input:         : We have facts to prove that if we invest in women and girls and provide them with better health and well-being, they will deliver healthier and wealthier and prosperous communities.
+Prediction     : wir mussen uns mit der schule und die menschen , die wir tun , um die menschen zu verstehen , die wir nicht tun , um die welt zu finden , die wir uns in die schule bringen , und
+Ground truth   : Wir können mit Fakten belegen, dass die Investition in Frauen und Mädchen und ihre Gesundheit und Wohlbefinden gesündere, wohlhabendere und erfolgreiche Gemeinschaften hervorbringt.
+
+Input:         : This is my bit of light.
+Prediction     : das ist das bild .
+Ground truth   : Dies ist mein kleines Licht.
+
+Input:         : Today there is the best weather in Ruhpolding.
+Prediction     : die meisten von ihnen sind die erste , die hier ist .
+Ground truth   : Heute ist das beste Wetter in Ruhpolding.
+
+----------------------------------------------------------------------------------------------------
+Input:         : Because living so healthily was killing me.
+Prediction     : aber meine familie hat mich auch immer noch immer wieder gewundet .
+Ground truth   : Denn dieses gesunde Leben brachte mich allmählich um.
+
+Input:         : I had to do that properly.
+Prediction     : ich hatte es noch nie .
+Ground truth   : Das musste ich anständig machen.
+
+Input:         : I've spent the last decade subjecting myself to pain and humiliation, hopefully for a good cause, which is self-improvement.
+Prediction     : ich habe eine menge von menschen , die die welt in der welt leben , und ich bin in der lage , die welt zu verstehen , dass die welt die welt sich selbst zu verbessern .
+Ground truth   : Das letzte Jahrzehnt habe ich damit verbracht, mich Schmerz und Demütigung auszusetzen, hoffentlich für eine gute Sache, die Selbstvervollkommnung.
+
+Input:         : But they also told us that the story of the Chibok girls was a hoax.
+Prediction     : die meisten von ihnen haben die meisten von ihnen , die sich in der lage waren , die wir hatten , die wir hatten .
+Ground truth   : Aber sie erzählten uns auch, dass die Geschichte der Mädchen aus Chibok eine Falschmeldung wäre.
+
+Input:         : We have facts to prove that if we invest in women and girls and provide them with better health and well-being, they will deliver healthier and wealthier and prosperous communities.
+Prediction     : wir haben die menschen , die wir uns helfen , ihre kinder zu helfen , ihre kinder zu helfen , ihre kinder zu helfen , ihre kinder zu verbessern und ihre kinder zu verbessern und ihre kinder zu verbessern .
+Ground truth   : Wir können mit Fakten belegen, dass die Investition in Frauen und Mädchen und ihre Gesundheit und Wohlbefinden gesündere, wohlhabendere und erfolgreiche Gemeinschaften hervorbringt.
+
+Input:         : This is my bit of light.
+Prediction     : das ist meine augen .
+Ground truth   : Dies ist mein kleines Licht.
+
+Input:         : Today there is the best weather in Ruhpolding.
+Prediction     : die meisten von ihnen sind die ersten montant .
+Ground truth   : Heute ist das beste Wetter in Ruhpolding.
+
+----------------------------------------------------------------------------------------------------
+Input:         : Because living so healthily was killing me.
+Prediction     : aber meine familie hat sich selbst verandert .
+Ground truth   : Denn dieses gesunde Leben brachte mich allmählich um.
+
+Input:         : I had to do that properly.
+Prediction     : ich hatte mich selbst zu fuhlen .
+Ground truth   : Das musste ich anständig machen.
+
+Input:         : I've spent the last decade subjecting myself to pain and humiliation, hopefully for a good cause, which is self-improvement.
+Prediction     : ich habe mich selbst in der vergangenheit gefullt , aber ich habe eine art von technologie , die sich in der lage macht der welt verandert , wie man sich selbst in der lage macht der welt
+Ground truth   : Das letzte Jahrzehnt habe ich damit verbracht, mich Schmerz und Demütigung auszusetzen, hoffentlich für eine gute Sache, die Selbstvervollkommnung.
+
+Input:         : But they also told us that the story of the Chibok girls was a hoax.
+Prediction     : aber wir haben eine menge von frauen , die sich in seinem leben bewohnbar waren .
+Ground truth   : Aber sie erzählten uns auch, dass die Geschichte der Mädchen aus Chibok eine Falschmeldung wäre.
+
+Input:         : We have facts to prove that if we invest in women and girls and provide them with better health and well-being, they will deliver healthier and wealthier and prosperous communities.
+Prediction     : wir mussen unsere kinder und frauen , die unsere kinder haben , und sie sind in einer welt , in der sie sich um die schule konzentrieren , und sie sind in der lage , ihre kinder zu unterstutzen ,
+Ground truth   : Wir können mit Fakten belegen, dass die Investition in Frauen und Mädchen und ihre Gesundheit und Wohlbefinden gesündere, wohlhabendere und erfolgreiche Gemeinschaften hervorbringt.
+
+Input:         : This is my bit of light.
+Prediction     : das ist meine kamera .
+Ground truth   : Dies ist mein kleines Licht.
+
+Input:         : Today there is the best weather in Ruhpolding.
+Prediction     : heute sind die meisten von ihnen in der mitte des schuls .
+Ground truth   : Heute ist das beste Wetter in Ruhpolding.
+
+----------------------------------------------------------------------------------------------------
+Input:         : Because living so healthily was killing me.
+Prediction     : und meine arbeit war sehr schwierig .
+Ground truth   : Denn dieses gesunde Leben brachte mich allmählich um.
+
+Input:         : I had to do that properly.
+Prediction     : ich habe sie schon gesehen .
+Ground truth   : Das musste ich anständig machen.
+
+Input:         : I've spent the last decade subjecting myself to pain and humiliation, hopefully for a good cause, which is self-improvement.
+Prediction     : ich habe auch die meisten von uns , die die welt in der mitte des lebens , und ich habe auch eine art von gefalteten , die die art von verbluffen
+Ground truth   : Das letzte Jahrzehnt habe ich damit verbracht, mich Schmerz und Demütigung auszusetzen, hoffentlich für eine gute Sache, die Selbstvervollkommnung.
+
+Input:         : But they also told us that the story of the Chibok girls was a hoax.
+Prediction     : aber wir haben die antwort auf die " schwefel " , die sie in den usa haben .
+Ground truth   : Aber sie erzählten uns auch, dass die Geschichte der Mädchen aus Chibok eine Falschmeldung wäre.
+
+Input:         : We have facts to prove that if we invest in women and girls and provide them with better health and well-being, they will deliver healthier and wealthier and prosperous communities.
+Prediction     : wir haben die menschen , die unsere familie und ihre familie haben , und sie werden auch mit ihren kindern , die sie in den usa und ihre eigenen , und sie haben ihre eigenen , die sie in ihren
+Ground truth   : Wir können mit Fakten belegen, dass die Investition in Frauen und Mädchen und ihre Gesundheit und Wohlbefinden gesündere, wohlhabendere und erfolgreiche Gemeinschaften hervorbringt.
+
+Input:         : This is my bit of light.
+Prediction     : das ist mein gehirn .
+Ground truth   : Dies ist mein kleines Licht.
+
+Input:         : Today there is the best weather in Ruhpolding.
+Prediction     : die zweite ist die schwefelwasserung .
+Ground truth   : Heute ist das beste Wetter in Ruhpolding.
+
+----------------------------------------------------------------------------------------------------
+Input:         : Because living so healthily was killing me.
+Prediction     : und meine arbeit war sehr viel mehr als meine familie .
+Ground truth   : Denn dieses gesunde Leben brachte mich allmählich um.
+
+Input:         : I had to do that properly.
+Prediction     : ich wollte das .
+Ground truth   : Das musste ich anständig machen.
+
+Input:         : I've spent the last decade subjecting myself to pain and humiliation, hopefully for a good cause, which is self-improvement.
+Prediction     : ich habe eine gute idee , dass ich die welt mit den meisten menschen , die sich auf die strasse verdunscht haben , und zwar auf der strasse , und zwar auf der strasse .
+Ground truth   : Das letzte Jahrzehnt habe ich damit verbracht, mich Schmerz und Demütigung auszusetzen, hoffentlich für eine gute Sache, die Selbstvervollkommnung.
+
+Input:         : But they also told us that the story of the Chibok girls was a hoax.
+Prediction     : aber wir haben die meisten von ihnen " connectic " , " die erste person " , die wir in der stadt hatten .
+Ground truth   : Aber sie erzählten uns auch, dass die Geschichte der Mädchen aus Chibok eine Falschmeldung wäre.
+
+Input:         : We have facts to prove that if we invest in women and girls and provide them with better health and well-being, they will deliver healthier and wealthier and prosperous communities.
+Prediction     : wir mussen die kinder und die kinder , die wir in der schule bringen , und sie sind sehr wichtig , um zu verstehen , ob sie sich mit unseren kindern und ihren kindern zu tun haben , und dass
+Ground truth   : Wir können mit Fakten belegen, dass die Investition in Frauen und Mädchen und ihre Gesundheit und Wohlbefinden gesündere, wohlhabendere und erfolgreiche Gemeinschaften hervorbringt.
+
+Input:         : This is my bit of light.
+Prediction     : das ist mein gehirn .
+Ground truth   : Dies ist mein kleines Licht.
+
+Input:         : Today there is the best weather in Ruhpolding.
+Prediction     : die meisten von ihnen sind ein prafrontalen polymer .
+Ground truth   : Heute ist das beste Wetter in Ruhpolding.
+
+----------------------------------------------------------------------------------------------------
+Input:         : Because living so healthily was killing me.
+Prediction     : denn ich hatte auch angst .
+Ground truth   : Denn dieses gesunde Leben brachte mich allmählich um.
+
+Input:         : I had to do that properly.
+Prediction     : ich wollte es einfach .
+Ground truth   : Das musste ich anständig machen.
+
+Input:         : I've spent the last decade subjecting myself to pain and humiliation, hopefully for a good cause, which is self-improvement.
+Prediction     : ich habe eine menge an dingen , die ich als kind in der welt verbluffend bin , und es ist sehr wichtig , dass ich die fahigkeit habe , die welt zu andern ,
+Ground truth   : Das letzte Jahrzehnt habe ich damit verbracht, mich Schmerz und Demütigung auszusetzen, hoffentlich für eine gute Sache, die Selbstvervollkommnung.
+
+Input:         : But they also told us that the story of the Chibok girls was a hoax.
+Prediction     : aber wir haben eine menge an kindern , die sich in der nahe des lebens bewegen . "
+Ground truth   : Aber sie erzählten uns auch, dass die Geschichte der Mädchen aus Chibok eine Falschmeldung wäre.
+
+Input:         : We have facts to prove that if we invest in women and girls and provide them with better health and well-being, they will deliver healthier and wealthier and prosperous communities.
+Prediction     : wir haben uns selbst geforscht , und wir haben die menschen , die ihre kinder und kinder , die ihre kinder und ihre kinder haben , die sie nicht brauchen , um ihre eigenen und ihre
+Ground truth   : Wir können mit Fakten belegen, dass die Investition in Frauen und Mädchen und ihre Gesundheit und Wohlbefinden gesündere, wohlhabendere und erfolgreiche Gemeinschaften hervorbringt.
+
+Input:         : This is my bit of light.
+Prediction     : das ist mein gehirn .
+Ground truth   : Dies ist mein kleines Licht.
+
+Input:         : Today there is the best weather in Ruhpolding.
+Prediction     : hier ist die konversation von maria .
+Ground truth   : Heute ist das beste Wetter in Ruhpolding.
+
+----------------------------------------------------------------------------------------------------
+Input:         : Because living so healthily was killing me.
+Prediction     : denn ich war auch in der lage , die gesundheit zu verwirren .
+Ground truth   : Denn dieses gesunde Leben brachte mich allmählich um.
+
+Input:         : I had to do that properly.
+Prediction     : ich wollte das auch .
+Ground truth   : Das musste ich anständig machen.
+
+Input:         : I've spent the last decade subjecting myself to pain and humiliation, hopefully for a good cause, which is self-improvement.
+Prediction     : ich bin ein bisschen in der lage , die welt zu verstehen , und ich habe einen weg fur die entwicklung von multiplistorien , die ich in der lage bin , die welt zu
+Ground truth   : Das letzte Jahrzehnt habe ich damit verbracht, mich Schmerz und Demütigung auszusetzen, hoffentlich für eine gute Sache, die Selbstvervollkommnung.
+
+Input:         : But they also told us that the story of the Chibok girls was a hoax.
+Prediction     : aber wir haben eine geschichte uber die mutter in der schule .
+Ground truth   : Aber sie erzählten uns auch, dass die Geschichte der Mädchen aus Chibok eine Falschmeldung wäre.
+
+Input:         : We have facts to prove that if we invest in women and girls and provide them with better health and well-being, they will deliver healthier and wealthier and prosperous communities.
+Prediction     : wir mussen uns mit den kindern und kindern die wahl haben , die wir uns nicht leisten konnen , sondern auch die entwicklung von kindern , die wir uns selbst und die kinder in der lage haben , die unsere
+Ground truth   : Wir können mit Fakten belegen, dass die Investition in Frauen und Mädchen und ihre Gesundheit und Wohlbefinden gesündere, wohlhabendere und erfolgreiche Gemeinschaften hervorbringt.
+
+Input:         : This is my bit of light.
+Prediction     : das ist mein gehirn .
+Ground truth   : Dies ist mein kleines Licht.
+
+Input:         : Today there is the best weather in Ruhpolding.
+Prediction     : die meisten von uns sind in der mitte des bundesstaats .
+Ground truth   : Heute ist das beste Wetter in Ruhpolding.
+
+----------------------------------------------------------------------------------------------------
+Input:         : Because living so healthily was killing me.
+Prediction     : und meine angst war sehr , sehr viel zu tun .
+Ground truth   : Denn dieses gesunde Leben brachte mich allmählich um.
+
+Input:         : I had to do that properly.
+Prediction     : ich wollte es einfach .
+Ground truth   : Das musste ich anständig machen.
+
+Input:         : I've spent the last decade subjecting myself to pain and humiliation, hopefully for a good cause, which is self-improvement.
+Prediction     : ich habe eine grosse menge an dingen , die ich kenne , und die meisten von ihnen haben eine art von ruckkehr von der art von ruckkehr von missverhaltnissen .
+Ground truth   : Das letzte Jahrzehnt habe ich damit verbracht, mich Schmerz und Demütigung auszusetzen, hoffentlich für eine gute Sache, die Selbstvervollkommnung.
+
+Input:         : But they also told us that the story of the Chibok girls was a hoax.
+Prediction     : aber sie sagten : " wir haben die regierung in der schule geklart . "
+Ground truth   : Aber sie erzählten uns auch, dass die Geschichte der Mädchen aus Chibok eine Falschmeldung wäre.
+
+Input:         : We have facts to prove that if we invest in women and girls and provide them with better health and well-being, they will deliver healthier and wealthier and prosperous communities.
+Prediction     : wir haben eine menge an menschen , die uns helfen , und die kinder , die uns helfen , die wir uns selbst zu finden , und die gesundheitsgeschaltet sind , und sie werden nicht mehr
+Ground truth   : Wir können mit Fakten belegen, dass die Investition in Frauen und Mädchen und ihre Gesundheit und Wohlbefinden gesündere, wohlhabendere und erfolgreiche Gemeinschaften hervorbringt.
+
+Input:         : This is my bit of light.
+Prediction     : das ist meine augen .
+Ground truth   : Dies ist mein kleines Licht.
+
+Input:         : Today there is the best weather in Ruhpolding.
+Prediction     : hier ist der grund , warum der passagier in der stadt ist .
+Ground truth   : Heute ist das beste Wetter in Ruhpolding.
+
+----------------------------------------------------------------------------------------------------
+Input:         : Because living so healthily was killing me.
+Prediction     : denn ich war auch in der lage , die angst zu andern .
+Ground truth   : Denn dieses gesunde Leben brachte mich allmählich um.
+
+Input:         : I had to do that properly.
+Prediction     : ich wollte es einfach .
+Ground truth   : Das musste ich anständig machen.
+
+Input:         : I've spent the last decade subjecting myself to pain and humiliation, hopefully for a good cause, which is self-improvement.
+Prediction     : ich habe mich in einer welt verabschiedet , in der ich mich selbst verabschieden habe , und zwar in einer sehr kleinen stadt , in der es keine angst gibt
+Ground truth   : Das letzte Jahrzehnt habe ich damit verbracht, mich Schmerz und Demütigung auszusetzen, hoffentlich für eine gute Sache, die Selbstvervollkommnung.
+
+Input:         : But they also told us that the story of the Chibok girls was a hoax.
+Prediction     : aber sie sagten : " wir haben die meisten dieser patienten in der schule geklart .
+Ground truth   : Aber sie erzählten uns auch, dass die Geschichte der Mädchen aus Chibok eine Falschmeldung wäre.
+
+Input:         : We have facts to prove that if we invest in women and girls and provide them with better health and well-being, they will deliver healthier and wealthier and prosperous communities.
+Prediction     : wir haben auch die probleme , die wir fur die schule und unsere kinder haben , und sie haben auch die angst , dass sie sich selbst und die gesundheit und die gesundheit der gesundheit und die gesundheit und die
+Ground truth   : Wir können mit Fakten belegen, dass die Investition in Frauen und Mädchen und ihre Gesundheit und Wohlbefinden gesündere, wohlhabendere und erfolgreiche Gemeinschaften hervorbringt.
+
+Input:         : This is my bit of light.
+Prediction     : das ist meine zeit .
+Ground truth   : Dies ist mein kleines Licht.
+
+Input:         : Today there is the best weather in Ruhpolding.
+Prediction     : die zweite sache ist die , die sie in der stadt sehen .
+Ground truth   : Heute ist das beste Wetter in Ruhpolding.
+
+----------------------------------------------------------------------------------------------------
+Input:         : Because living so healthily was killing me.
+Prediction     : denn ich war auch in der lage , die angst zu andern .
+Ground truth   : Denn dieses gesunde Leben brachte mich allmählich um.
+
+Input:         : I had to do that properly.
+Prediction     : ich wollte es einfach .
+Ground truth   : Das musste ich anständig machen.
+
+Input:         : I've spent the last decade subjecting myself to pain and humiliation, hopefully for a good cause, which is self-improvement.
+Prediction     : ich habe mich in einer welt verabschiedet , in der ich mich selbst verabschieden habe , und zwar in einer sehr kleinen stadt , in der es keine angst gibt
+Ground truth   : Das letzte Jahrzehnt habe ich damit verbracht, mich Schmerz und Demütigung auszusetzen, hoffentlich für eine gute Sache, die Selbstvervollkommnung.
+
+Input:         : But they also told us that the story of the Chibok girls was a hoax.
+Prediction     : aber sie sagten : " wir haben die meisten dieser patienten in der schule geklart .
+Ground truth   : Aber sie erzählten uns auch, dass die Geschichte der Mädchen aus Chibok eine Falschmeldung wäre.
+
+Input:         : We have facts to prove that if we invest in women and girls and provide them with better health and well-being, they will deliver healthier and wealthier and prosperous communities.
+Prediction     : wir haben auch die probleme , die wir fur die schule und unsere kinder haben , und sie haben auch die angst , dass sie sich selbst und die gesundheit und die gesundheit der gesundheit und die gesundheit und die
+Ground truth   : Wir können mit Fakten belegen, dass die Investition in Frauen und Mädchen und ihre Gesundheit und Wohlbefinden gesündere, wohlhabendere und erfolgreiche Gemeinschaften hervorbringt.
+
+Input:         : This is my bit of light.
+Prediction     : das ist meine zeit .
+Ground truth   : Dies ist mein kleines Licht.
+
+Input:         : Today there is the best weather in Ruhpolding.
+Prediction     : die zweite sache ist die , die sie in der stadt sehen .
+Ground truth   : Heute ist das beste Wetter in Ruhpolding.
+
+----------------------------------------------------------------------------------------------------
+Input:         : Because living so healthily was killing me.
+Prediction     : denn ich hatte angst vor anderen dingen .
+Ground truth   : Denn dieses gesunde Leben brachte mich allmählich um.
+
+Input:         : I had to do that properly.
+Prediction     : ich konnte es mir vorstellen .
+Ground truth   : Das musste ich anständig machen.
+
+Input:         : I've spent the last decade subjecting myself to pain and humiliation, hopefully for a good cause, which is self-improvement.
+Prediction     : ich habe mich mit einer anderen zeit gefecht , die in der lage ist , die welt zu verbessern , und ich habe eine sehr gute entscheidung , die sich in die zukunft zu bringen .
+Ground truth   : Das letzte Jahrzehnt habe ich damit verbracht, mich Schmerz und Demütigung auszusetzen, hoffentlich für eine gute Sache, die Selbstvervollkommnung.
+
+Input:         : But they also told us that the story of the Chibok girls was a hoax.
+Prediction     : aber sie sagten : " wir haben die regierung in einer stadt gefecht .
+Ground truth   : Aber sie erzählten uns auch, dass die Geschichte der Mädchen aus Chibok eine Falschmeldung wäre.
+
+Input:         : We have facts to prove that if we invest in women and girls and provide them with better health and well-being, they will deliver healthier and wealthier and prosperous communities.
+Prediction     : wir mussen die kinder und die kinder , die wir uns selbst und die wahl haben , die wir uns selbst und die gesundheit , die wir uns selbst und die gesundheit , die wir uns selbst und die gesundheit
+Ground truth   : Wir können mit Fakten belegen, dass die Investition in Frauen und Mädchen und ihre Gesundheit und Wohlbefinden gesündere, wohlhabendere und erfolgreiche Gemeinschaften hervorbringt.
+
+Input:         : This is my bit of light.
+Prediction     : das ist mein gehirn .
+Ground truth   : Dies ist mein kleines Licht.
+
+Input:         : Today there is the best weather in Ruhpolding.
+Prediction     : hier ist der erste schritt in den usa .
+Ground truth   : Heute ist das beste Wetter in Ruhpolding.
+
+----------------------------------------------------------------------------------------------------
+Input:         : Because living so healthily was killing me.
+Prediction     : denn ich hatte angst , dass die menschen mich selbst nicht mehr verklagt .
+Ground truth   : Denn dieses gesunde Leben brachte mich allmählich um.
+
+Input:         : I had to do that properly.
+Prediction     : ich wollte das auch .
+Ground truth   : Das musste ich anständig machen.
+
+Input:         : I've spent the last decade subjecting myself to pain and humiliation, hopefully for a good cause, which is self-improvement.
+Prediction     : ich habe mich in einer welt entwickelt , in der ich eine sehr gute idee habe , und ich habe eine sehr gute idee , die die gleichen , die in der lage ist , die welt zu verbessern .
+Ground truth   : Das letzte Jahrzehnt habe ich damit verbracht, mich Schmerz und Demütigung auszusetzen, hoffentlich für eine gute Sache, die Selbstvervollkommnung.
+
+Input:         : But they also told us that the story of the Chibok girls was a hoax.
+Prediction     : aber sie sagten , dass wir in der schule in der schule waren .
+Ground truth   : Aber sie erzählten uns auch, dass die Geschichte der Mädchen aus Chibok eine Falschmeldung wäre.
+
+Input:         : We have facts to prove that if we invest in women and girls and provide them with better health and well-being, they will deliver healthier and wealthier and prosperous communities.
+Prediction     : wir haben die kinder , die sich selbst und die kinder , die sich in der lage sind , sich selbst zu fuhlen , und wir haben mehr als die meisten menschen , die wir in der lage sind ,
+Ground truth   : Wir können mit Fakten belegen, dass die Investition in Frauen und Mädchen und ihre Gesundheit und Wohlbefinden gesündere, wohlhabendere und erfolgreiche Gemeinschaften hervorbringt.
+
+Input:         : This is my bit of light.
+Prediction     : das ist meine .
+Ground truth   : Dies ist mein kleines Licht.
+
+Input:         : Today there is the best weather in Ruhpolding.
+Prediction     : die kapazitat des zweiten weltkriegs ist der fall .
+Ground truth   : Heute ist das beste Wetter in Ruhpolding.
+
+----------------------------------------------------------------------------------------------------
+Input:         : Because living so healthily was killing me.
+Prediction     : und ich war immer noch unvermeidbar .
+Ground truth   : Denn dieses gesunde Leben brachte mich allmählich um.
+
+Input:         : I had to do that properly.
+Prediction     : ich wollte es nur fur mich .
+Ground truth   : Das musste ich anständig machen.
+
+Input:         : I've spent the last decade subjecting myself to pain and humiliation, hopefully for a good cause, which is self-improvement.
+Prediction     : ich habe mich in der lage , die menschheit zu verstehen , und ich habe eine sehr gute zeit , die in der lage ist , die welt zu verkluffen , die ich in der
+Ground truth   : Das letzte Jahrzehnt habe ich damit verbracht, mich Schmerz und Demütigung auszusetzen, hoffentlich für eine gute Sache, die Selbstvervollkommnung.
+
+Input:         : But they also told us that the story of the Chibok girls was a hoax.
+Prediction     : aber sie sagten , dass wir uns in der schule ein sehr wichtiger mann haben .
+Ground truth   : Aber sie erzählten uns auch, dass die Geschichte der Mädchen aus Chibok eine Falschmeldung wäre.
+
+Input:         : We have facts to prove that if we invest in women and girls and provide them with better health and well-being, they will deliver healthier and wealthier and prosperous communities.
+Prediction     : wir haben viele menschen , die unsere kinder und kinder haben , und wir haben eine rolle , die sie in der lage sind , die unsere gesundheit und unsere gesundheits - und unsere gesundheits - und unsere
+Ground truth   : Wir können mit Fakten belegen, dass die Investition in Frauen und Mädchen und ihre Gesundheit und Wohlbefinden gesündere, wohlhabendere und erfolgreiche Gemeinschaften hervorbringt.
+
+Input:         : This is my bit of light.
+Prediction     : das ist mein gehirn .
+Ground truth   : Dies ist mein kleines Licht.
+
+Input:         : Today there is the best weather in Ruhpolding.
+Prediction     : die erste ist die befreundliche befreuigung .
+Ground truth   : Heute ist das beste Wetter in Ruhpolding.
+
+----------------------------------------------------------------------------------------------------
+Input:         : Because living so healthily was killing me.
+Prediction     : denn ich war auch fur die angst .
+Ground truth   : Denn dieses gesunde Leben brachte mich allmählich um.
+
+Input:         : I had to do that properly.
+Prediction     : ich konnte das auch .
+Ground truth   : Das musste ich anständig machen.
+
+Input:         : I've spent the last decade subjecting myself to pain and humiliation, hopefully for a good cause, which is self-improvement.
+Prediction     : ich habe noch eine sehr interessante idee , dass ich in der lage bin , die welt zu verkleinen , und ich habe eine sehr grosse rolle in der lage , die ich habe , eine
+Ground truth   : Das letzte Jahrzehnt habe ich damit verbracht, mich Schmerz und Demütigung auszusetzen, hoffentlich für eine gute Sache, die Selbstvervollkommnung.
+
+Input:         : But they also told us that the story of the Chibok girls was a hoax.
+Prediction     : aber sie sagten , dass wir uns in der lage waren , die regierung zu verklagten .
+Ground truth   : Aber sie erzählten uns auch, dass die Geschichte der Mädchen aus Chibok eine Falschmeldung wäre.
+
+Input:         : We have facts to prove that if we invest in women and girls and provide them with better health and well-being, they will deliver healthier and wealthier and prosperous communities.
+Prediction     : wir haben die moglichkeit , die kinder zu beschuln , die uns helfen , die wir uns selbst zu verbessern , und die gesundheit und die gesundheit , die wir haben , und die wir uns
+Ground truth   : Wir können mit Fakten belegen, dass die Investition in Frauen und Mädchen und ihre Gesundheit und Wohlbefinden gesündere, wohlhabendere und erfolgreiche Gemeinschaften hervorbringt.
+
+Input:         : This is my bit of light.
+Prediction     : das ist mein gehirn .
+Ground truth   : Dies ist mein kleines Licht.
+
+Input:         : Today there is the best weather in Ruhpolding.
+Prediction     : die erste ist die bewertung der paradox .
+Ground truth   : Heute ist das beste Wetter in Ruhpolding.
+
+----------------------------------------------------------------------------------------------------
+Input:         : Because living so healthily was killing me.
+Prediction     : denn ich war fur mich selbst war angstlich .
+Ground truth   : Denn dieses gesunde Leben brachte mich allmählich um.
+
+Input:         : I had to do that properly.
+Prediction     : ich konnte es immer wieder .
+Ground truth   : Das musste ich anständig machen.
+
+Input:         : I've spent the last decade subjecting myself to pain and humiliation, hopefully for a good cause, which is self-improvement.
+Prediction     : ich habe mich in einer anderen welt vergewaltigt , und ich habe eine sehr grosse rolle in der lage , mich zu befehl zu vergewaltigen , um zu v
+Ground truth   : Das letzte Jahrzehnt habe ich damit verbracht, mich Schmerz und Demütigung auszusetzen, hoffentlich für eine gute Sache, die Selbstvervollkommnung.
+
+Input:         : But they also told us that the story of the Chibok girls was a hoax.
+Prediction     : aber sie sagten , dass wir die geschichte von einer frau im jahr 1997 wussten .
+Ground truth   : Aber sie erzählten uns auch, dass die Geschichte der Mädchen aus Chibok eine Falschmeldung wäre.
+
+Input:         : We have facts to prove that if we invest in women and girls and provide them with better health and well-being, they will deliver healthier and wealthier and prosperous communities.
+Prediction     : wir mussen die kinder und die kinder , die wir fur die gesundheit und die gesundheit und die gesundheits - und die gesundheits - und die gesundheits - und die wir alle haben , die wir fur
+Ground truth   : Wir können mit Fakten belegen, dass die Investition in Frauen und Mädchen und ihre Gesundheit und Wohlbefinden gesündere, wohlhabendere und erfolgreiche Gemeinschaften hervorbringt.
+
+Input:         : This is my bit of light.
+Prediction     : das ist mein gehirn .
+Ground truth   : Dies ist mein kleines Licht.
+
+Input:         : Today there is the best weather in Ruhpolding.
+Prediction     : heute ist die karikatur der karikatur .
+Ground truth   : Heute ist das beste Wetter in Ruhpolding.
+
+----------------------------------------------------------------------------------------------------
+Input:         : Because living so healthily was killing me.
+Prediction     : denn ich habe angst , dass die gesundheit immer mehr angst hatte .
+Ground truth   : Denn dieses gesunde Leben brachte mich allmählich um.
+
+Input:         : I had to do that properly.
+Prediction     : ich hatte das gefuhl , dass ich es wollte .
+Ground truth   : Das musste ich anständig machen.
+
+Input:         : I've spent the last decade subjecting myself to pain and humiliation, hopefully for a good cause, which is self-improvement.
+Prediction     : ich habe eine gute idee , dass ich in der lage bin , die welt zu andern , und dass es eine sehr gute befursache fur die gesundheit ist , die ich in einer sehr s
+Ground truth   : Das letzte Jahrzehnt habe ich damit verbracht, mich Schmerz und Demütigung auszusetzen, hoffentlich für eine gute Sache, die Selbstvervollkommnung.
+
+Input:         : But they also told us that the story of the Chibok girls was a hoax.
+Prediction     : aber sie sagten , dass wir uns als kind in der nahe der geschichte der philosopha waren .
+Ground truth   : Aber sie erzählten uns auch, dass die Geschichte der Mädchen aus Chibok eine Falschmeldung wäre.
+
+Input:         : We have facts to prove that if we invest in women and girls and provide them with better health and well-being, they will deliver healthier and wealthier and prosperous communities.
+Prediction     : wir haben die kinder , die uns und die kinder , die uns und die kinder , die wir brauchen , um unsere eigenen und unsere gesundheit und unsere gesundheit und unsere gesundheit und unsere gesundheit zu andern , und
+Ground truth   : Wir können mit Fakten belegen, dass die Investition in Frauen und Mädchen und ihre Gesundheit und Wohlbefinden gesündere, wohlhabendere und erfolgreiche Gemeinschaften hervorbringt.
+
+Input:         : This is my bit of light.
+Prediction     : das ist meine form .
+Ground truth   : Dies ist mein kleines Licht.
+
+Input:         : Today there is the best weather in Ruhpolding.
+Prediction     : in diesem fall ist die franzosische flagge .
+Ground truth   : Heute ist das beste Wetter in Ruhpolding.
+
+----------------------------------------------------------------------------------------------------
+Input:         : Because living so healthily was killing me.
+Prediction     : denn ich war auch in der gesundheitsvermeidigung .
+Ground truth   : Denn dieses gesunde Leben brachte mich allmählich um.
+
+Input:         : I had to do that properly.
+Prediction     : ich konnte es mir so einfach vor .
+Ground truth   : Das musste ich anständig machen.
+
+Input:         : I've spent the last decade subjecting myself to pain and humiliation, hopefully for a good cause, which is self-improvement.
+Prediction     : ich habe mich sehr sehr sehr sehr sehr sehr sehr sehr sehr sehr sehr , sehr , sehr viel uber die forschungs - und enthullungen in der kunst - welt , die ich mit meiner
+Ground truth   : Das letzte Jahrzehnt habe ich damit verbracht, mich Schmerz und Demütigung auszusetzen, hoffentlich für eine gute Sache, die Selbstvervollkommnung.
+
+Input:         : But they also told us that the story of the Chibok girls was a hoax.
+Prediction     : aber sie sagten , dass wir uns von der geschichte der frauen gehort haben .
+Ground truth   : Aber sie erzählten uns auch, dass die Geschichte der Mädchen aus Chibok eine Falschmeldung wäre.
+
+Input:         : We have facts to prove that if we invest in women and girls and provide them with better health and well-being, they will deliver healthier and wealthier and prosperous communities.
+Prediction     : wir haben die kinder , die sich um unsere kinder kummern , und sie haben eine art , die wir fur die gesundheit und unsere kinder haben , die wir fur die gesundheit und unsere kinder und unsere gesundheit und
+Ground truth   : Wir können mit Fakten belegen, dass die Investition in Frauen und Mädchen und ihre Gesundheit und Wohlbefinden gesündere, wohlhabendere und erfolgreiche Gemeinschaften hervorbringt.
+
+Input:         : This is my bit of light.
+Prediction     : das ist mein korper .
+Ground truth   : Dies ist mein kleines Licht.
+
+Input:         : Today there is the best weather in Ruhpolding.
+Prediction     : das ist die erste schwarme der exponente .
+Ground truth   : Heute ist das beste Wetter in Ruhpolding.
+
+----------------------------------------------------------------------------------------------------
+Input:         : Because living so healthily was killing me.
+Prediction     : denn ich war sehr glucklich , mich zu verfluchten .
+Ground truth   : Denn dieses gesunde Leben brachte mich allmählich um.
+
+Input:         : I had to do that properly.
+Prediction     : ich konnte es immer wieder tun .
+Ground truth   : Das musste ich anständig machen.
+
+Input:         : I've spent the last decade subjecting myself to pain and humiliation, hopefully for a good cause, which is self-improvement.
+Prediction     : ich habe mich sehr sehr sehr sehr sehr sehr sehr sehr sehr sehr befried , wie ich die verbrecherin und die verbrecherinbarung der menschlichen gesundheits
+Ground truth   : Das letzte Jahrzehnt habe ich damit verbracht, mich Schmerz und Demütigung auszusetzen, hoffentlich für eine gute Sache, die Selbstvervollkommnung.
+
+Input:         : But they also told us that the story of the Chibok girls was a hoax.
+Prediction     : aber sie sagten , dass sie uns die erste gruppe von madchen , die die geschichte der frau gehort haben .
+Ground truth   : Aber sie erzählten uns auch, dass die Geschichte der Mädchen aus Chibok eine Falschmeldung wäre.
+
+Input:         : We have facts to prove that if we invest in women and girls and provide them with better health and well-being, they will deliver healthier and wealthier and prosperous communities.
+Prediction     : wir haben die kinder , die unsere kinder und familien und familien und familien , die wir uns selbst brauchen , um zu verstehen , dass wir die gesundheit und die gesundheit und die gesundheit der menschen , die wir
+Ground truth   : Wir können mit Fakten belegen, dass die Investition in Frauen und Mädchen und ihre Gesundheit und Wohlbefinden gesündere, wohlhabendere und erfolgreiche Gemeinschaften hervorbringt.
+
+Input:         : This is my bit of light.
+Prediction     : das ist mein gehirn .
+Ground truth   : Dies ist mein kleines Licht.
+
+Input:         : Today there is the best weather in Ruhpolding.
+Prediction     : die meisten der schulabgange sind die konsequenz des konkurrentens .
+Ground truth   : Heute ist das beste Wetter in Ruhpolding.
+
+----------------------------------------------------------------------------------------------------
+Input:         : Because living so healthily was killing me.
+Prediction     : denn ich war auch in der angst vor herzverhaltnis .
+Ground truth   : Denn dieses gesunde Leben brachte mich allmählich um.
+
+Input:         : I had to do that properly.
+Prediction     : ich konnte es auch .
+Ground truth   : Das musste ich anständig machen.
+
+Input:         : I've spent the last decade subjecting myself to pain and humiliation, hopefully for a good cause, which is self-improvement.
+Prediction     : ich bin sehr sehr sehr sehr sehr sehr , sehr sehr , sehr , sehr , sehr , sehr , sehr , sehr , sehr ich meine mit meiner arbeit mit der arbeit von psycho -
+Ground truth   : Das letzte Jahrzehnt habe ich damit verbracht, mich Schmerz und Demütigung auszusetzen, hoffentlich für eine gute Sache, die Selbstvervollkommnung.
+
+Input:         : But they also told us that the story of the Chibok girls was a hoax.
+Prediction     : aber sie sagten , dass wir uns die frau der geschichte der ersten frau haben .
+Ground truth   : Aber sie erzählten uns auch, dass die Geschichte der Mädchen aus Chibok eine Falschmeldung wäre.
+
+Input:         : We have facts to prove that if we invest in women and girls and provide them with better health and well-being, they will deliver healthier and wealthier and prosperous communities.
+Prediction     : wir haben kinder , die sich selbst und die kinder , die wir mit der gleichen zeit und dem , was wir tun , um die gesundheit und die gesundheit der kinder zu verbessern , und die wir uns selbst
+Ground truth   : Wir können mit Fakten belegen, dass die Investition in Frauen und Mädchen und ihre Gesundheit und Wohlbefinden gesündere, wohlhabendere und erfolgreiche Gemeinschaften hervorbringt.
+
+Input:         : This is my bit of light.
+Prediction     : das ist meine form .
+Ground truth   : Dies ist mein kleines Licht.
+
+Input:         : Today there is the best weather in Ruhpolding.
+Prediction     : das ist der erste privatar der prize .
+Ground truth   : Heute ist das beste Wetter in Ruhpolding.
+
+----------------------------------------------------------------------------------------------------
+Input:         : Because living so healthily was killing me.
+Prediction     : weil mein herz mich zu angst hatte .
+Ground truth   : Denn dieses gesunde Leben brachte mich allmählich um.
+
+Input:         : I had to do that properly.
+Prediction     : ich hatte es mir zu helfen .
+Ground truth   : Das musste ich anständig machen.
+
+Input:         : I've spent the last decade subjecting myself to pain and humiliation, hopefully for a good cause, which is self-improvement.
+Prediction     : ich habe mich mit einer sehr , sehr wenig in meiner zeit und in der tat , habe ich eine sehr , sehr , sehr , sehr , sehr , sehr , sehr , sehr , sehr , sehr ,
+Ground truth   : Das letzte Jahrzehnt habe ich damit verbracht, mich Schmerz und Demütigung auszusetzen, hoffentlich für eine gute Sache, die Selbstvervollkommnung.
+
+Input:         : But they also told us that the story of the Chibok girls was a hoax.
+Prediction     : aber sie sagten , sie wurden die meisten madchen in der schule sagen , dass wir das haben .
+Ground truth   : Aber sie erzählten uns auch, dass die Geschichte der Mädchen aus Chibok eine Falschmeldung wäre.
+
+Input:         : We have facts to prove that if we invest in women and girls and provide them with better health and well-being, they will deliver healthier and wealthier and prosperous communities.
+Prediction     : wir haben die kinder und die kinder , die sich fur die gesundheit und die probleme und die probleme , die wir brauchen , sind die probleme , die wir brauchen , um die kinder zu helfen , und die
+Ground truth   : Wir können mit Fakten belegen, dass die Investition in Frauen und Mädchen und ihre Gesundheit und Wohlbefinden gesündere, wohlhabendere und erfolgreiche Gemeinschaften hervorbringt.
+
+Input:         : This is my bit of light.
+Prediction     : das ist meine zeit .
+Ground truth   : Dies ist mein kleines Licht.
+
+Input:         : Today there is the best weather in Ruhpolding.
+Prediction     : heute ist der kapazitaten in der stadt .
+Ground truth   : Heute ist das beste Wetter in Ruhpolding.
+
+----------------------------------------------------------------------------------------------------
