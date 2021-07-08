@@ -13,12 +13,12 @@ from itertools import chain
 
 
 #tf.keras.backend.set_floatx('float64')
-tf.config.threading.set_intra_op_parallelism_threads(10) # Model uses 10 CPUs while training. + GPU
+tf.config.threading.set_intra_op_parallelism_threads(4) # Model uses 10 CPUs while training. + GPU
 tf.get_logger().setLevel('ERROR')
 
 # path to csv-file
-csv_file = 'C:/Users/thoma/OneDrive/Dokumente/Studium/4. Semester/Seminar Applied Deeplearning for NLP/NLP_project_on_tweets_of_German_politicians/Big5Essay/essays.csv'
-csv_test = 'essays_test.csv'
+csv_file = 'Big5Essay/essays.csv'
+csv_test = 'Big5Essay/essays_test.csv'
 # some csv need encoding
 encoding = "ISO-8859-1"
 # text column
@@ -32,9 +32,9 @@ val_per = 15
 
 # model path
 dataset_name = 'Big5Essays'
-saved_model_path = 'Model\\'.format(dataset_name.replace('/', '_'))
+saved_model_path = 'Big5Essay/Model/'.format(dataset_name.replace('/', '_'))
 # Include the epoch in the file name (uses `str.format`)
-checkpoint_path = "Model\\Checkpoints\\cp-{epoch:04d}.ckpt"
+checkpoint_path = "Big5Essay/Model/Checkpoints/cp-{epoch:04d}.ckpt"
 checkpoint_dir = os.path.dirname(checkpoint_path)
 
 # retrain existing model (only if there is one saved)
@@ -45,7 +45,7 @@ AUTOTUNE = tf.data.AUTOTUNE
 batch_size = 32
 seed = 42
 
-epochs = 0
+epochs = 1
 
 
 # all_files = glob.glob(csv_file + "/*.csv")
@@ -305,7 +305,8 @@ if retrain:
 # Save the weights using the `checkpoint_path` format
 model.save_weights(checkpoint_path.format(epoch=0))
 
-tf.keras.utils.plot_model(model)
+#Keine Ahnung wieso das nicht geht
+#tf.keras.utils.plot_model(model)
 
 #loss = tf.keras.losses.binary_crossentropy() # No idea what the error is. Fixed in line 312
 metrics = tf.metrics.AUC()
