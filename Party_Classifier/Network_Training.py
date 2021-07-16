@@ -23,9 +23,9 @@ checkpoint_dir = os.path.dirname(checkpoint_path)
 
 batch_size = 32
 sequence_length = 250
-epochs = 5
+epochs = 100
 
-pathToData = "Data_Generation/"
+pathToData = "Party_Classifier/Data_Generation/"
 
 lkrTweets = np.load(pathToData + 'LKR.npy', allow_pickle=True)
 trainNp = np.load(pathToData + 'Train.npy', allow_pickle=True)
@@ -93,7 +93,7 @@ cp_callback = tf.keras.callbacks.ModelCheckpoint(
     verbose=1,
     save_weights_only=True)
 
-log_dir = "Model/Checkpoints/Logs/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+log_dir = "Party_Classifier/Model/Checkpoints/Logs/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 
 embedding_dim = 16
@@ -106,16 +106,13 @@ def model_builder(hp):
   tf.keras.layers.GlobalAveragePooling1D()])
 
   hp_units = hp.Int('units', min_value=500, max_value=20000, step=1000)
+  #hp_units = hp.Int('units', min_value=500, max_value=10000, step=1000)
   model.add(tf.keras.layers.Dense(units=hp_units, activation='relu'))
   model.add(tf.keras.layers.Dropout(0.2))
   model.add(tf.keras.layers.Dense(7, activation='sigmoid'))
-  # Tune the number of units in the first Dense layer
-  # Choose an optimal value between 32-512
 
-
-  # Tune the learning rate for the optimizer
-  # Choose an optimal value from 0.01, 0.001, or 0.0001
   hp_learning_rate = hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4,1e-5])
+  #hp_learning_rate = hp.Choice('learning_rate', values=[1e-2])
 
   model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=hp_learning_rate),
                 loss='binary_crossentropy',
@@ -142,8 +139,8 @@ def hyperTrain():
                      objective='val_accuracy',
                      max_epochs=10,
                      factor=3,
-                     directory='hyperParams_opt',
-                     project_name='test')
+                     directory='Party_Classifier/hyperParams_opt',
+                     project_name='PartyClassifier')
 
   stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
   tuner.search(train_ds, epochs=50, validation_data=val_ds, callbacks=[stop_early])
@@ -158,7 +155,14 @@ def hyperTrain():
   """)
 
 def train():
-
+  tuner = kt.Hyperband(model_builder,
+                     objective='val_accuracy',
+                     max_epochs=10,
+                     factor=3,
+                     directory='Party_Classifier/hyperParams_opt',
+                     project_name='PartyClassifier')
+  best_hps=tuner.get_best_hyperparameters(num_trials=1)[0]
+  model = tuner.hypermodel.build(best_hps)
   history = model.fit(
       train_ds,
       validation_data=val_ds,
