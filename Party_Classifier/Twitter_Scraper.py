@@ -10,10 +10,14 @@ from selenium.webdriver.support import expected_conditions
 from selenium.common import exceptions
 from os import listdir
 
+#adapted from: https://youtu.be/3KaffTIZ5II
+
+#returns the appropriate webdriver, which is chrome in our case
 def create_webdriver_instance():
     driver = Chrome()
     return driver
 
+#tries to open the given url
 def gotoUrl(url, driver):
     try:
         driver.get(url)
@@ -22,6 +26,7 @@ def gotoUrl(url, driver):
         print("Timeout while waiting for website")
     return True
 
+#returns the time of the tweet which we use as an unique identifier
 def generate_tweet_id(tweet):
     return tweet[2]
 
@@ -40,9 +45,11 @@ def scroll_down_page(driver, last_position, scroll_attempt, num_seconds_to_load=
         else:
             return scroll_down_page(driver, curr_position, scroll_attempt + 1)
     last_position = curr_position
-    print(end_of_scroll_region)
+    #print(end_of_scroll_region)
     return last_position, end_of_scroll_region
 
+#creates header for the file if the mode argument is 'w'
+#appends collected data to the given file otherwise
 def save_tweet_data_to_csv(records, filepath, mode='a+'):
     header = ['User', 'Handle', 'PostDate', 'TweetText', 'ReplyCount', 'RetweetCount', 'LikeCount']
     with open(filepath, mode=mode, newline='', encoding='utf-8') as f:
@@ -52,6 +59,7 @@ def save_tweet_data_to_csv(records, filepath, mode='a+'):
         if records:
             writer.writerow(records)
 
+#returns all tweets that are currently loaded as WebElements
 def collect_all_tweets_from_current_view(driver, lookback_limit=100000):
     """The page is continously loaded, so as you scroll down the number of tweets returned by this function will
      continue to grow. To limit the risk of 're-processing' the same tweet over and over again, you can set the
@@ -65,6 +73,7 @@ def collect_all_tweets_from_current_view(driver, lookback_limit=100000):
     else:
         return page_cards[-lookback_limit:]
 
+#extracts the relevant information our of a single WebElement and returns it as tuple
 def extract_data_from_current_tweet_card(card):
     try:
         user = card.find_element_by_xpath('.//span').text
@@ -111,6 +120,11 @@ def extract_data_from_current_tweet_card(card):
     tweet = (user, handle, postdate, tweet_text, reply_count, retweet_count, like_count)
     return tweet
 
+#opens the url for the given user
+#creates a csv file for storing the tweets of the user
+#extracts the data from the loaded view and saves it
+#scrolls down the page to load new tweets
+#repeats until it can't scroll any further
 def collectTwitterDataForUser(user):
     url = 'https://twitter.com/' + user
     filepath = user + '.csv'
@@ -147,6 +161,7 @@ def collectTwitterDataForUser(user):
     driver.quit()
 
 
+#collects the data and saves it for all users in our dataset
 def collectTwitterData():
     userList = getTwitterAccountNames()
     for user in userList:
