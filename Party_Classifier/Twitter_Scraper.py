@@ -10,7 +10,7 @@ from selenium.webdriver.support import expected_conditions
 from selenium.common import exceptions
 from os import listdir
 
-#adapted from: https://youtu.be/3KaffTIZ5II
+#adapted from: https://youtu.be/3KaffTIZ5II and https://github.com/israel-dryer/Twitter-Scraper
 
 #returns the appropriate webdriver, which is chrome in our case
 def create_webdriver_instance():
