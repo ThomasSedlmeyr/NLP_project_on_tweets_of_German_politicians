@@ -1,6 +1,7 @@
 from os import listdir
 import numpy as np
 import csv
+from operator import itemgetter
 
 #This module contains all the methods which were use to create the traindataset 
 
@@ -18,7 +19,7 @@ def createDictionaryPoliticiansToParty():
 #Generates a list with triples containing the name of the twitter account, 
 #the persons name and the political party
 def readMdBcsvFile():
-    with open('MdB.csv', newline='',encoding='cp1252') as f:
+    with open('Party_Classifier/Data_Generation/MdB.csv', newline='') as f:
         reader = csv.reader(f)
         data = list(reader)
     
@@ -49,7 +50,7 @@ def generateNumpyArrayForTraining():
             name = tweetData[0] 
             time = tweetData[2] 
             timeAndName = name + time
-            if(not (timeAndName in tweetTimesAndNames)):                
+            if(not (timeAndName in tweetTimesAndNames)):    #removes duplicates             
                 trainData = [] 
                 trainData.append(tweetData[3])
                 party = dictPoliticianToParty.get(tweetData[len(tweetData)-1])
@@ -90,7 +91,7 @@ def getTwitterAccountNames():
 def readAllCSVfilesOfAllPoliticans():
     resultData = []
     #Reading the data of the first run
-    folder = "AllTweets_1/"
+    folder = "Party_Classifier/Data_Generation/AllTweets_1/"
     fileNames = listdir(folder)
     for fileName in fileNames:        
         data = readCSVfileOfOnePolitician(fileName, folder)        
@@ -98,7 +99,7 @@ def readAllCSVfilesOfAllPoliticans():
         resultData.append(data)
 
     #Reading the data of the second run
-    folder = "AllTweets_2/"
+    folder = "Party_Classifier/Data_Generation/AllTweets_2/"
     fileNames = listdir(folder)
     for fileName in fileNames:        
          data = readCSVfileOfOnePolitician(fileName, folder)        
@@ -166,9 +167,87 @@ def saveDataOfLKRparty():
     numpyArray = np.array(resultData)
     np.save("LKR", numpyArray)
 
+#Generates a txt-file containing the name of a politician and all tweets with the time when they were sent
+def generateFileWithNamePartyTimeAndTweet():
+    csvData = readAllCSVfilesOfAllPoliticans()
+    nameTimeTweetList = []
+    #tweetTimesAndNames is a set which is used to store unique keys for eachTweet. This is used because
+    #the data contains also tweets which were retweeted. These tweets will removed in the data.  
+    #Also we made two runs to get our data from twitter. This is the reason, why we got much duplicates, which
+    #will be removed
+    tweetTimesAndNames = set()
+    counter = 0
+    for tweetsOfOnePolitician in csvData:
+        counter += 1
+        for tweetData in tweetsOfOnePolitician:
+            twitterName = tweetData[7] 
+            name = dictTwitterAccountToRealName.get(twitterName)
+            time = tweetData[2]
+            party = dictPoliticianToParty.get(twitterName)
+            if party =="GRï¿½NE":
+                party = "GRÜN"
+            timeAndName = twitterName + time
+            if(not (timeAndName in tweetTimesAndNames)):    #removes duplicates      
+                tweet = tweetData[3]  
+                #All tweets should have a mimimum size of 8
+                if len(tweet) >= 8: 
+                    tweet = cleanUpTweet(tweet)              
+                    nameTimeTweetList.append((name, party, time, tweet))     
+          
+    #nameTimeTweetList = sorted(nameTimeTweetList, key=lambda tup: tup[0])
+    #nameTimeTweetList.sort(key=lambda 
+    # tup: tup[0])
+    nameTimeTweetList = [x for x in nameTimeTweetList if x[0] is not None]
+    nameTimeTweetList.sort(key=itemgetter(0))
+    lastName = ""
+    with open('Party_Classifier/Data_Generation/NamePartyTimeTweet.txt', 'w', encoding='utf-8') as f:
+        for data in nameTimeTweetList:
+            (name, party, time, tweet) = data
+            if name != lastName:
+                f.write("----------")
+                f.write("\n")
+                f.write(name)
+                f.write('\n')
+                f.write(party)
+                f.write('\n')
+                lastName = name
+
+            f.write(time + " " + tweet)
+            f.write('\n')
+
+
+def createDictionaryTwitterAcountNameToRealName():
+    accountsNamesParties = readMdBcsvFile()    
+    keys = []
+    values = []
+    for (twitterNames, realNames, _) in accountsNamesParties:
+        keys.append(twitterNames)
+        values.append(realNames)
+
+    dictionary = dict(zip(keys, values))
+    return dictionary
+
+def cleanUpTweet(tweet):
+    #Remove \n \r
+    #tweet = tweet.rstrip()
+    tweet = tweet.replace('\r', '')
+    tweet = tweet.replace('\n', '')
+    tweet = tweet.replace('\t', '')
+    #Remove all characters after @ till next " "
+    #indexAt = tweet.index("@")
+    #indexSpace = tweet.index(" ", indexAt+1)
+    #firstPart = tweet[:indexAt]
+    #secondPart = tweet[indexSpace:]
+    #tweet = firstPart + secondPart
+    return tweet   
+
+
 #Global dictionaries which were used in several functions. We used these dictionaries to 
 #increase the performance 
 tweetIdToParty = {}
 dictPoliticianToParty = createDictionaryPoliticiansToParty()
 dictPartyToNumber = createPartyToNumberDict()
+dictTwitterAccountToRealName = createDictionaryTwitterAcountNameToRealName()
 
+generateFileWithNamePartyTimeAndTweet()
+print("Fertig")
