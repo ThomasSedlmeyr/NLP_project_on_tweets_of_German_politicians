@@ -7,6 +7,8 @@ import tensorflow as tf
 import pandas as pd
 import numpy as np
 import datetime
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 from tensorflow.keras import layers
 from tensorflow.keras import losses
@@ -120,6 +122,18 @@ def model_builder(hp):
 
   return model
 
+def buildBestModel():
+  tuner = kt.Hyperband(model_builder,
+                     objective='val_accuracy',
+                     max_epochs=10,
+                     factor=3,
+                     directory='Party_Classifier/hyperParams_opt',
+                     project_name='PartyClassifier')
+  best_hps=tuner.get_best_hyperparameters(num_trials=1)[0]
+  model = tuner.hypermodel.build(best_hps)
+  latest = tf.train.latest_checkpoint(checkpoint_dir)
+  model.load_weights(latest)
+  return model
 #model = tf.keras.Sequential([
   #layers.Embedding(max_features + 1, embedding_dim),
   #layers.Dropout(0.2),
@@ -163,6 +177,7 @@ def train():
                      project_name='PartyClassifier')
   best_hps=tuner.get_best_hyperparameters(num_trials=1)[0]
   model = tuner.hypermodel.build(best_hps)
+  model.summary()
   history = model.fit(
       train_ds,
       validation_data=val_ds,
@@ -176,8 +191,7 @@ def train():
 
 
 def evaluate():
-  latest = tf.train.latest_checkpoint(checkpoint_dir)
-  model.load_weights(latest)
+  model = buildBestModel()
   export_model = tf.keras.Sequential([
     vectorize_layer,
     model
@@ -188,17 +202,36 @@ def evaluate():
   export_model.compile(
       loss=losses.BinaryCrossentropy(from_logits=False), optimizer="adam", metrics=['accuracy']
   )
-
+  #model.evaluate(test_ds)
+  #export_model.evaluate(test_ds)
+  labels = []
+  guesses = []
   predictions = export_model.predict(testNp[0])
   wrongClassifications = []
   for i in range(0, len(predictions)):
-    guess = predictions[i]
+    guess = np.argmax(predictions[i])
+    guesses.append(guess)
+    labels.append(np.argmax(testNp[1][i]))
+
     if (testNp[1][i][guess] == 0):
       wrongClassifications.append(i)
+  cm = tf.math.confusion_matrix(labels, guesses, num_classes=7).numpy()
+  con_mat_norm = np.around(cm.astype('float') / cm.sum(axis=1)[:, np.newaxis], decimals=2)
+  classes=parties
+  con_mat_df = pd.DataFrame(con_mat_norm,
+                     index = classes, 
+                     columns = classes)
 
+  figure = plt.figure(figsize=(7, 7))
+  sns.heatmap(con_mat_df, annot=True,cmap=plt.cm.Blues)
+  plt.tight_layout()
+  plt.ylabel('True label')
+  plt.xlabel('Predicted label')
+  plt.show()
+  print(len(wrongClassifications))
   testTransposed = np.transpose(testNp)
-  for i in wrongClassifications:
-    print(testTransposed[i])
+  #for i in wrongClassifications:
+    #print(testTransposed[i])
 
   evaluateLKR(export_model)
 
@@ -216,14 +249,23 @@ def evaluate():
 
 def evaluateLKR(export_model):
   result = export_model.predict(lkrTweets)
-  sum = np.zeros(len(parties)+1)
+  sum = np.zeros(len(parties))
   for i in range(0, len(result)):
     sum = np.add(sum, result[i])
 
   print(parties)           
+  sum /= 1.0 * len(lkrTweets)
   print("Network: " + str(sum))
+  #With our best model we got: 
+  #['CDU', 'LINKE', 'FDP', 'GRÜNE','SPD', 'CSU', 'AFD']
+  #[0.18223546 0.12500428 0.18392617 0.1105402  0.20657062 0.02684399 0.19835847]
+
+
+ 
 
 parties = ['CDU', 'LINKE', 'FDP', 'GRÜNE','SPD', 'CSU', 'AFD']
-hyperTrain()
+#hyperTrain()
+#trainBestHyperParameters()
 #train()
-#evaluate()
+evaluate()
+
