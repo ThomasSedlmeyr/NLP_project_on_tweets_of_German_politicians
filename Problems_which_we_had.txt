@@ -4,7 +4,10 @@
 1.3 Problem with the silenium browser extension because we simulated the behavior of normal twitter user. We were not able to buffer a huge amount of tweets.
 1.4 For every politician we saved his data in an own CSV-file
 1.5 We had to clean our data because some politicians politicians had no party in the file we used and there were some other errors in the file MDB.csv 
-1.6 There were many typos in the CSV file we found on the internet
+1.6 There were many typos in the CSV file we found on the internet also the encoding of the umlauts was wrong
+1.7 Translating the tweets directly as txt-file with Google Translate was not possible we had to copy them into word documents which destroyed the format
+1.8 
+
 Durchlauf Thomas:
 CDU 42846.0
 LINKE 30893.0

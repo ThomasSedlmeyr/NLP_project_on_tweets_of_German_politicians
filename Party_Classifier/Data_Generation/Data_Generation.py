@@ -19,7 +19,7 @@ def createDictionaryPoliticiansToParty():
 #Generates a list with triples containing the name of the twitter account, 
 #the persons name and the political party
 def readMdBcsvFile():
-    with open('Party_Classifier/Data_Generation/MdB.csv', newline='') as f:
+    with open('Party_Classifier/Data_Generation/MdB.csv', newline='', encoding="UTF8") as f:
         reader = csv.reader(f)
         data = list(reader)
     
@@ -177,15 +177,15 @@ def generateFileWithNamePartyTimeAndTweet():
     #will be removed
     tweetTimesAndNames = set()
     counter = 0
-    for tweetsOfOnePolitician in csvData:
-        counter += 1
+    for tweetsOfOnePolitician in csvData:        
         for tweetData in tweetsOfOnePolitician:
+            counter += 1
             twitterName = tweetData[7] 
             name = dictTwitterAccountToRealName.get(twitterName)
             time = tweetData[2]
             party = dictPoliticianToParty.get(twitterName)
             if party =="GRï¿½NE":
-                party = "GRÜN"
+                party = "GRÜNE"
             timeAndName = twitterName + time
             if(not (timeAndName in tweetTimesAndNames)):    #removes duplicates      
                 tweet = tweetData[3]  
@@ -211,10 +211,8 @@ def generateFileWithNamePartyTimeAndTweet():
                 f.write(party)
                 f.write('\n')
                 lastName = name
-
             f.write(time + " " + tweet)
             f.write('\n')
-
 
 def createDictionaryTwitterAcountNameToRealName():
     accountsNamesParties = readMdBcsvFile()    
@@ -241,7 +239,6 @@ def cleanUpTweet(tweet):
     #tweet = firstPart + secondPart
     return tweet   
 
-
 #Global dictionaries which were used in several functions. We used these dictionaries to 
 #increase the performance 
 tweetIdToParty = {}
@@ -250,4 +247,4 @@ dictPartyToNumber = createPartyToNumberDict()
 dictTwitterAccountToRealName = createDictionaryTwitterAcountNameToRealName()
 
 generateFileWithNamePartyTimeAndTweet()
-print("Fertig")
+print("End")
