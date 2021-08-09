@@ -1,0 +1,8 @@
+Format:
+---------
+all data of one politican
+first line Name
+second line party
+every following line has the format: time tweet_text
+---------
+
