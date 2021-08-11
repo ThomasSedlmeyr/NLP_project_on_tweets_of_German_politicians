@@ -5,7 +5,6 @@ import timestring
 
 def readTweets():
     tweets = []
-    politician = ""
     partyOfPolitician = ""
     counter = 0
     with open('Big5_Analysis/Data_Generation/Name_Party_Time_Tweet_translated_complete.txt') as f:
@@ -23,7 +22,7 @@ def readTweets():
                 (time, tweetText) = parsedLine
                 tweets.append((time, politicianName, partyOfPolitician, tweetText))
                 counter += 1
-                if counter == 10000:
+                if counter == 10000000:
                     break
     return tweets
 
@@ -38,35 +37,59 @@ def parseOneLine(line):
         time = timestring.Date(timeText)
     except:
         return None
-
     return (time, tweetText)
 
 def evaluateAllTweets(model):
     tweets = readTweets()
     tweetsText = [x[3] for x in tweets]
-    print(tweetsText)
+    #print(tweetsText)
+    print("Prediction startet")
     outputs = model.predict(tweetsText)
-    tweetsWithOutput = zip(tweets, outputs)
-    return tweetsWithOutput
+    print("Prediction finished")
+    tweetsWithOutputs = []
+    for i in range(0, len(outputs)):
+        tweetsWithOutputs.append((tweets[i][0], tweets[i][1], tweets[i][2], outputs[i]))
+    np.save('Big5_Analysis/tweetsWithOutput.npy', np.array(tweetsWithOutputs))
+    return tweetsWithOutputs
 
-def big5percentagePerparty(tweetsWithOutput):
-    it = itertools.groupby(tweetsWithOutput, operator.itemgetter(2))
+
+def big5percentagePerParty(tweetsWithOutput):
+    tweetsWithOutput.sort(key=itemgetter(2))
+    groupedListByParty = [list(group) for key, group in groupby(tweetsWithOutput, itemgetter(2))]
+    #it = groupby(tweetsWithOutput, itemgetter(2))
+    #it = list(it)
     resultList = []
-    for outputsOfOneParty in it:
-        sum = [x[4] for x in outputsOfOneParty]
-        percentage = np.sum(sum) / len(outputsOfOneParty)
-        resultOfOneParty = (outputsOfOneParty[2], percentage) 
+    for outputsOfOneParty in groupedListByParty:
+        values = [x[3] for x in outputsOfOneParty]
+        sumList = np.sum(values, axis = 0)
+        percentage = sumList / len(outputsOfOneParty)
+        resultOfOneParty = (outputsOfOneParty[0][2], percentage) 
         resultList.append(resultOfOneParty)
-    print("['CDU', 'LINKE', 'FDP', 'GRÜNE','SPD', 'CSU', 'AFD']")
+    #print("['CDU', 'LINKE', 'FDP', 'GRÜNE','SPD', 'CSU', 'AFD']")
+    #,cEXT,cNEU,cAGR,cCON,cOPN
+    print(resultList)
+    return resultList
+    
+def big5percentagePerName(tweetsWithOutput):
+    #sort by name of the politician
+    tweetsWithOutput.sort(key=itemgetter(1))
+    groupedListByPolitician = [list(group) for key, group in groupby(tweetsWithOutput, itemgetter(1))]
+    #it = groupby(tweetsWithOutput, itemgetter(2))
+    #it = list(it)
+    resultList = []
+    for outputsOfOnePolitician in groupedListByPolitician:
+        values = [x[3] for x in outputsOfOnePolitician]
+        sumList = np.sum(values, axis = 0)
+        percentage = sumList / len(outputsOfOnePolitician)
+        resultOfOnePolitician = (outputsOfOnePolitician[0][1], percentage) 
+        resultList.append(resultOfOnePolitician)
+    #print("['CDU', 'LINKE', 'FDP', 'GRÜNE','SPD', 'CSU', 'AFD']")
+    #,cEXT,cNEU,cAGR,cCON,cOPN
     print(resultList)
     return resultList
 
 
+    
 #tweets = readTweets()
 #evaluateAllTweets(None)
 #print("Finished")
-
-
-    
-
-
