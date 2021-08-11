@@ -54,8 +54,9 @@ def evaluateAllTweets(model):
 
 
 def big5percentagePerParty(tweetsWithOutput):
-    tweetsWithOutput.sort(key=itemgetter(2))
-    groupedListByParty = [list(group) for key, group in groupby(tweetsWithOutput, itemgetter(2))]
+    tweetsList = list(tweetsWithOutput)
+    tweetsList.sort(key=itemgetter(2))
+    groupedListByParty = [list(group) for key, group in groupby(tweetsList, itemgetter(2))]
     #it = groupby(tweetsWithOutput, itemgetter(2))
     #it = list(it)
     resultList = []
@@ -70,7 +71,7 @@ def big5percentagePerParty(tweetsWithOutput):
     print(resultList)
     return resultList
     
-def big5percentagePerName(tweetsWithOutput):
+def big5percentagePerPolitician(tweetsWithOutput, threshhold):
     #sort by name of the politician
     tweetsWithOutput.sort(key=itemgetter(1))
     groupedListByPolitician = [list(group) for key, group in groupby(tweetsWithOutput, itemgetter(1))]
@@ -78,11 +79,12 @@ def big5percentagePerName(tweetsWithOutput):
     #it = list(it)
     resultList = []
     for outputsOfOnePolitician in groupedListByPolitician:
-        values = [x[3] for x in outputsOfOnePolitician]
-        sumList = np.sum(values, axis = 0)
-        percentage = sumList / len(outputsOfOnePolitician)
-        resultOfOnePolitician = (outputsOfOnePolitician[0][1], percentage) 
-        resultList.append(resultOfOnePolitician)
+        if len(outputsOfOnePolitician) > threshhold:
+            values = [x[3] for x in outputsOfOnePolitician]
+            sumList = np.sum(values, axis = 0)
+            percentage = sumList / len(outputsOfOnePolitician)
+            resultOfOnePolitician = (outputsOfOnePolitician[0][1], percentage) 
+            resultList.append(resultOfOnePolitician)
     #print("['CDU', 'LINKE', 'FDP', 'GRÜNE','SPD', 'CSU', 'AFD']")
     #,cEXT,cNEU,cAGR,cCON,cOPN
     print(resultList)
