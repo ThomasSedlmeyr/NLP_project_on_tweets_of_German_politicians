@@ -10,15 +10,20 @@ from sklearn.model_selection import train_test_split
 import numpy as np
 import matplotlib.pyplot as plt
 from itertools import chain
+import Tweets_Analyzer as ta
 
+
+os.environ["TFHUB_CACHE_DIR"] = "/tmp/model" 
+os.environ['TFHUB_DOWNLOAD_PROGRESS'] = "1"
 
 #tf.keras.backend.set_floatx('float64')
 tf.config.threading.set_intra_op_parallelism_threads(4) # Model uses 10 CPUs while training. + GPU
 tf.get_logger().setLevel('ERROR')
-
 # path to csv-file
-csv_file = 'Big5Essay/essays.csv'
-csv_test = 'Big5Essay/essays_test.csv'
+#csv_file = 'Big5_Analysis/Data_Generation/essays.csv'
+csv_file = 'Big5_Analysis/Data_Generation/essays_german_to_english.csv'
+#csv_file = 'Big5_Analysis/Data_Generation/test.csv'
+csv_test = 'Big5_Analysis/Data_Generation/essays_test.csv'
 # some csv need encoding
 encoding = "ISO-8859-1"
 # text column
@@ -29,12 +34,6 @@ r_col = ['cEXT','cNEU','cAGR','cCON','cOPN']
 # set percentage for train, val and rest for test
 train_per = 80
 val_per = 15
-
-# model path
-#saved_model_path = 'Big5Essay/Model/l8_h512_a8/'
-# Include the epoch in the file name (uses `str.format`)
-#checkpoint_path = "Big5Essay/Model/l8_h512_a8/Checkpoints/cp-{epoch:01d}.ckpt"
-#checkpoint_dir = os.path.dirname(checkpoint_path)
 
 # retrain existing model (only if there is one saved)
 retrain = False
@@ -47,29 +46,17 @@ seed = 42
 
 epochs = 30
 
+def loadDatasetFromFile(path):
+    dataframe = pd.read_csv(path, encoding=encoding, error_bad_lines=False)
+    texts = dataframe.pop(t_col)
+    texts = tf.data.Dataset.from_tensor_slices(texts)
+    output = dataframe.drop(columns=[col for col in dataframe if col not in r_col])
+    output = np.where(output=='y', 1, 0)
+    output = tf.data.Dataset.from_tensor_slices(output)
+    dataset = tf.data.Dataset.zip((texts, output))
+    return dataset
 
-# all_files = glob.glob(csv_file + "/*.csv")
-#
-# li = []
-#
-# for filename in all_files:
-#     df = pd.read_csv(filename, index_col=None, header=0, encoding=encoding, lineterminator='\n')
-#     li.append(df)
-#
-# dataframe = pd.concat(li, axis=0, ignore_index=True)
-
-dataframe = pd.read_csv(csv_file, encoding=encoding)
-print(dataframe.columns.tolist())
-#dataframe = dataframe.head(1000)
-print(dataframe.head())
-
-texts = dataframe.pop(t_col)
-texts = tf.data.Dataset.from_tensor_slices(texts)
-output = dataframe.drop(columns=[col for col in dataframe if col not in r_col])
-# transform y n to 1 0
-output = np.where(output=='y', 1, 0)
-output = tf.data.Dataset.from_tensor_slices(output)
-dataset = tf.data.Dataset.zip((texts, output)) # datasets have to be one (!) tupple.
+dataset = loadDatasetFromFile(csv_file)
 
 for line in dataset.take(5):
   print(f'{line[0].numpy()}') # Notice indexing bc zip!
@@ -80,7 +67,7 @@ lenData = len(list(dataset))
 dataset = dataset.shuffle(lenData, seed = seed)
 train_split = lenData//100*train_per
 val_split = lenData//100*(train_per + val_per)
-
+print(val_split)
 raw_train_ds = dataset.take(train_split)
 raw_train_ds_batched = raw_train_ds.batch(batch_size=batch_size)
 train_ds = raw_train_ds_batched.cache().prefetch(buffer_size=AUTOTUNE)
@@ -109,11 +96,9 @@ print("Length of val: {}".format(len(list(raw_val_ds))))
 print("Length of test: {}".format(len(list(raw_test_ds))))
 
 
-#bert_model_name = 'small_bert/bert_en_uncased_L-4_H-512_A-8'
-#bert_model_name = 'small_bert/bert_en_uncased_L-8_H-512_A-8'
 map_name_to_handle = {
     'bert_en_uncased_L-12_H-768_A-12':
-        'https://tfhub.dev/tensorflow/bert_en_uncased_L-12_H-768_A-12/3',
+        'https://tfhub.dev/tensorflow/bert_en_uncased_L-12_H-768_A-12/4',
     'bert_en_cased_L-12_H-768_A-12':
         'https://tfhub.dev/tensorflow/bert_en_cased_L-12_H-768_A-12/3',
     'bert_multi_cased_L-12_H-768_A-12':
@@ -131,7 +116,7 @@ map_name_to_handle = {
     'small_bert/bert_en_uncased_L-4_H-256_A-4':
         'https://tfhub.dev/tensorflow/small_bert/bert_en_uncased_L-4_H-256_A-4/1',
     'small_bert/bert_en_uncased_L-4_H-512_A-8':
-        'https://tfhub.dev/tensorflow/small_bert/bert_en_uncased_L-4_H-512_A-8/1',
+        'https://tfhub.dev/tensorflow/small_bert/bert_en_uncased_L-4_H-512_A-8/2',
     'small_bert/bert_en_uncased_L-4_H-768_A-12':
         'https://tfhub.dev/tensorflow/small_bert/bert_en_uncased_L-4_H-768_A-12/1',
     'small_bert/bert_en_uncased_L-6_H-128_A-2':
@@ -147,7 +132,7 @@ map_name_to_handle = {
     'small_bert/bert_en_uncased_L-8_H-256_A-4':
         'https://tfhub.dev/tensorflow/small_bert/bert_en_uncased_L-8_H-256_A-4/1',
     'small_bert/bert_en_uncased_L-8_H-512_A-8':
-        'https://tfhub.dev/tensorflow/small_bert/bert_en_uncased_L-8_H-512_A-8/1',
+        'https://tfhub.dev/tensorflow/small_bert/bert_en_uncased_L-8_H-512_A-8/2',
     'small_bert/bert_en_uncased_L-8_H-768_A-12':
         'https://tfhub.dev/tensorflow/small_bert/bert_en_uncased_L-8_H-768_A-12/1',
     'small_bert/bert_en_uncased_L-10_H-128_A-2':
@@ -251,15 +236,14 @@ map_model_to_preprocess = {
 
 #method for training different bert models and saving the result
 def train_different_variations(epochs):
-    models_to_train = ['small_bert/bert_en_uncased_L-8_H-256_A-4', 'small_bert/bert_en_uncased_L-8_H-512_A-8', 'small_bert/bert_en_uncased_L-4_H-512_A-8']
+    models_to_train = ['small_bert/bert_en_uncased_L-8_H-512_A-8', 'small_bert/bert_en_uncased_L-4_H-512_A-8']
     for model_name in models_to_train:
-        path_for_saving = 'Big5Essay/Model/' + model_name[11:] + '/'
-        print(path_for_saving)
-        checkpoint_path = path_for_saving + "Checkpoints/cp-{epoch:01d}.ckpt"
-        print(checkpoint_path)
+        path_for_saving = 'Big5_Analysis/Model_double_translated/' + model_name[11:] + '/'
+        checkpoint_path = path_for_saving + 'Checkpoints/cp-{epoch:01d}.ckpt'
+        log_dir = path_for_saving + 'Logs/'
         model = build_model(model_name)
         model.save_weights(checkpoint_path.format(epoch=0))
-        train(model, epochs, path_for_saving, checkpoint_path)
+        train(model, epochs, path_for_saving, checkpoint_path, log_dir)
 
 # initializer = tf.keras.initializers.LecunNormal()
 def build_model(bert_model_name):
@@ -323,13 +307,7 @@ def compileModel(model):
     return model
 
 
-def testModel(modelPath):
-    model = build_model() 
-    model.load_weights(modelPath)
-    # Save the weights using the `checkpoint_path` format
-    model.save_weights(checkpoint_path.format(epoch=0))
-
-def train(model, epochs, path_for_saving, checkpoint_path):
+def train(model, epochs, path_for_saving, checkpoint_path, log_dir):
 
     cp_callback = tf.keras.callbacks.ModelCheckpoint(
         filepath=checkpoint_path,
@@ -343,9 +321,11 @@ def train(model, epochs, path_for_saving, checkpoint_path):
     earlystop_callback = tf.keras.callbacks.EarlyStopping(
     monitor='val_loss', 
     patience=5)
+
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir)
     history = model.fit(x=train_ds,
                         validation_data=val_ds,
-                        callbacks=[cp_callback, earlystop_callback],
+                        callbacks=[cp_callback, earlystop_callback, tensorboard_callback],
                         epochs=epochs)
 
     loss, accuracy = model.evaluate(test_ds)
@@ -391,8 +371,9 @@ def plot_result(history):
     plt.savefig("Plot1.png")
 
 
-def loadModel(modelPath):
-    reloaded_model = tf.saved_model.load(modelPath)
+def loadModel(model_path):
+    reloaded_model = tf.keras.models.load_model(model_path, compile=False)
+    reloaded_model = compileModel(reloaded_model)
     return reloaded_model
 
 def print_my_examples(inputs, results):
@@ -412,42 +393,33 @@ examples = [
     'I always feel uncomfortable around other people.'
 ]
 
+
+def getTestDataset():
+    dataset = loadDatasetFromFile('Big5_Analysis/Data_Generation/essays_german_to_english.csv')
+    lenData = len(list(dataset))
+    dataset = dataset.shuffle(lenData, seed = seed)
+    val_split = lenData//100*(train_per + val_per)
+    print(val_split)
+    raw_test_ds = dataset.skip(val_split)
+    raw_test_ds_batched = raw_test_ds.batch(batch_size=batch_size)
+    test_ds = raw_test_ds_batched.cache().prefetch(buffer_size=AUTOTUNE)
+    return test_ds
+
 def testModel(model_path):
-    #checkpoint_dir = 'Big5Essay/Model/bert_en_uncased_L-8_H-512_A-8/Checkpoints'
-    #latest = tf.train.latest_checkpoint(checkpoint_dir)
-    #model = build_model('small_bert/bert_en_uncased_L-8_H-512_A-8')
-    #model = compileModel(model)
-    #model.load_weights(latest)
-    #model = tf.saved_model.load(model_path)
-    
-    model = tf.keras.models.load_model(model_path, compile=False)
-    model = compileModel(model)
+    model = loadModel(model_path)
+    test_ds = getTestDataset()
+    loss, accuracy = model.evaluate(test_ds) 
+    print("Accuracy " + str(accuracy))
     #model.summary()
     #results = model(tf.constant(examples))
     #print_my_examples(examples, results)
-    #model.evaluate(test_ds)
 
-    #dataframe = pd.read_csv('Big5Essay/Data_Generation/essays_german_to_english.csv', encoding=encoding, error_bad_lines=False)
-    #dataframe = pd.read_csv('Big5Essay/Data_Generation/test.csv', encoding=encoding)
-    dataframe = pd.read_csv('Big5Essay/Data_Generation/essays.csv', encoding=encoding)
-    #dataframe = dataframe.head(1000)
-    print(len(list(dataframe)))
-    print(dataframe.columns.tolist())
-    texts = dataframe.pop(t_col)
-    texts = tf.strings.regex_replace(texts, '"', "")
-    print(texts)
-    texts = tf.data.Dataset.from_tensor_slices(texts)
-    output = dataframe.drop(columns=[col for col in dataframe if col not in r_col])
-    # transform y n to 1 0
-    output = np.where(output=='y', 1, 0)
-    output = tf.data.Dataset.from_tensor_slices(output)
-    dataset = tf.data.Dataset.zip((texts, output))
-    raw_test_ds_batched = dataset.batch(batch_size=batch_size)
-    test_ds2 = raw_test_ds_batched.cache().prefetch(buffer_size=AUTOTUNE)
-    loss, accuracy = model.evaluate(test_ds2) 
-    print("Accuracy " + str(accuracy))
-    #lenData = len(list(dataset))
 
 
 #train_different_variations(epochs)
-testModel('Big5Essay/Model/bert_en_uncased_L-8_H-512_A-8')
+testModel('Big5_Analysis/Model_double_translated/bert_en_uncased_L-8_H-512_A-8')
+#model = loadModel('Big5_Analysis/Model_double_translated/bert_en_uncased_L-8_H-512_A-8')
+#tweetsWithOutput = ta.evaluateAllTweets(model)
+
+#ta.big5percentagePerParty(tweetsWithOutput)
+#ta.big5percentagePerName(tweetsWithOutput)
