@@ -1,4 +1,3 @@
-
 import os
 import re
 import shutil
@@ -19,7 +18,8 @@ tf.config.threading.set_intra_op_parallelism_threads(6) # Model uses 6 CPUs whil
 
 import keras_tuner as kt
 
-# Include the epoch in the file name (uses `str.format`)
+
+pathToData = "Party_Classifier/Data_Generation/"
 checkpoint_path = "Party_Classifier/Model/Checkpoints/Keras_Tuner/cp-{epoch:04d}.ckpt"
 checkpoint_dir = os.path.dirname(checkpoint_path)
 
@@ -27,16 +27,15 @@ batch_size = 32
 sequence_length = 250
 epochs = 100
 
-pathToData = "Party_Classifier/Data_Generation/"
 
-lkrTweets = np.load(pathToData + 'LKR.npy', allow_pickle=True)
 trainNp = np.load(pathToData + 'Train.npy', allow_pickle=True)
-testNp = np.load(pathToData + 'Test.npy', allow_pickle=True)
 valNp = np.load(pathToData + 'Val.npy', allow_pickle=True)
+testNp = np.load(pathToData + 'Test.npy', allow_pickle=True)
+
 
 raw_train_ds = tf.data.Dataset.from_tensor_slices((list(trainNp[0]), list(trainNp[1])))
-raw_test_ds = tf.data.Dataset.from_tensor_slices((list(testNp[0]), list(testNp[1])))
 raw_val_ds = tf.data.Dataset.from_tensor_slices((list(valNp[0]), list(valNp[1])))
+raw_test_ds = tf.data.Dataset.from_tensor_slices((list(testNp[0]), list(testNp[1])))
 
 batched_train_ds = raw_train_ds.batch(batch_size)
 batched_val_ds = raw_val_ds.batch(batch_size)
@@ -47,11 +46,7 @@ train_ds = batched_train_ds.cache().prefetch(buffer_size=AUTOTUNE)
 val_ds = batched_val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 test_ds = batched_test_ds.cache().prefetch(buffer_size=AUTOTUNE)
 
-
-#for text_batch, label_batch in batched_train_ds.take(1):
-  #for i in range(0, 4):
-    #print("Review", text_batch.numpy()[i])
-    #print("Label", label_batch.numpy()[i])
+lkrTweets = np.load(pathToData + 'LKR.npy', allow_pickle=True)
 
 def custom_standardization(input_data):
   lowercase = tf.strings.lower(input_data)
@@ -101,20 +96,16 @@ tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram
 embedding_dim = 16
 
 def model_builder(hp):
-
   model = tf.keras.Sequential([
   tf.keras.layers.Embedding(max_features + 1, embedding_dim),
   tf.keras.layers.Dropout(0.2),
   tf.keras.layers.GlobalAveragePooling1D()])
-
   hp_units = hp.Int('units', min_value=500, max_value=20000, step=1000)
-  #hp_units = hp.Int('units', min_value=500, max_value=10000, step=1000)
   model.add(tf.keras.layers.Dense(units=hp_units, activation='relu'))
   model.add(tf.keras.layers.Dropout(0.2))
   model.add(tf.keras.layers.Dense(7, activation='sigmoid'))
 
   hp_learning_rate = hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4,1e-5])
-  #hp_learning_rate = hp.Choice('learning_rate', values=[1e-2])
 
   model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=hp_learning_rate),
                 loss='binary_crossentropy',
@@ -134,19 +125,6 @@ def buildBestModel():
   latest = tf.train.latest_checkpoint(checkpoint_dir)
   model.load_weights(latest)
   return model
-#model = tf.keras.Sequential([
-  #layers.Embedding(max_features + 1, embedding_dim),
-  #layers.Dropout(0.2),
-  #layers.GlobalAveragePooling1D(), 
-  #layers.Dense(1000, activation='relu'),
-  #layers.Dropout(0.2),
-  #layers.Dense(7, activation='sigmoid')])
-
-#model.summary()
-
-#model.compile(loss='binary_crossentropy',
-              #optimizer='adam',
-              #metrics=['accuracy'])
 
 def hyperTrain():
   tuner = kt.Hyperband(model_builder,
@@ -169,14 +147,7 @@ def hyperTrain():
   """)
 
 def train():
-  tuner = kt.Hyperband(model_builder,
-                     objective='val_accuracy',
-                     max_epochs=10,
-                     factor=3,
-                     directory='Party_Classifier/hyperParams_opt',
-                     project_name='PartyClassifier')
-  best_hps=tuner.get_best_hyperparameters(num_trials=1)[0]
-  model = tuner.hypermodel.build(best_hps)
+  model = buildBestModel()
   model.summary()
   history = model.fit(
       train_ds,
@@ -185,7 +156,6 @@ def train():
       epochs=epochs)
 
   loss, accuracy = model.evaluate(test_ds)
-
   print("Loss: ", loss)
   print("Accuracy: ", accuracy)
 
@@ -195,26 +165,22 @@ def evaluate():
   export_model = tf.keras.Sequential([
     vectorize_layer,
     model
-    #,
-    #layers.Activation('sigmoid')
   ])
 
   export_model.compile(
       loss=losses.BinaryCrossentropy(from_logits=False), optimizer="adam", metrics=['accuracy']
   )
-  #model.evaluate(test_ds)
-  #export_model.evaluate(test_ds)
   labels = []
   guesses = []
-  predictions = export_model.predict(testNp[0])
   wrongClassifications = []
+  predictions = export_model.predict(testNp[0])
   for i in range(0, len(predictions)):
     guess = np.argmax(predictions[i])
     guesses.append(guess)
     labels.append(np.argmax(testNp[1][i]))
-
     if (testNp[1][i][guess] == 0):
       wrongClassifications.append(i)
+
   cm = tf.math.confusion_matrix(labels, guesses, num_classes=7).numpy()
   con_mat_norm = np.around(cm.astype('float') / cm.sum(axis=1)[:, np.newaxis], decimals=2)
   classes=parties
@@ -230,22 +196,7 @@ def evaluate():
   plt.show()
   print(len(wrongClassifications))
   testTransposed = np.transpose(testNp)
-  #for i in wrongClassifications:
-    #print(testTransposed[i])
-
   evaluateLKR(export_model)
-
-
-  #result = export_model.predict(lkrTweets)
-  #for i in range(0, len(result)):
-  #    print(parties)           
-  #    print("Network: " + str(result[i]))
-  #result = export_model.predict(testNp[0])
-  #result2 = export_model.evaluate(testNp[0])
-  #for i in range(0, len(testNp[0])):
-  #    print(parties)           
-    #  print("Network: " + str(result[i]))
-   # #  print("Expected: " + str(testNp[1][i]))
 
 def evaluateLKR(export_model):
   result = export_model.predict(lkrTweets)
@@ -259,8 +210,6 @@ def evaluateLKR(export_model):
   #With our best model we got: 
   #['CDU', 'LINKE', 'FDP', 'GRÜNE','SPD', 'CSU', 'AFD']
   #[0.18223546 0.12500428 0.18392617 0.1105402  0.20657062 0.02684399 0.19835847]
-
-
  
 
 parties = ['CDU', 'LINKE', 'FDP', 'GRÜNE','SPD', 'CSU', 'AFD']
