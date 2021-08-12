@@ -241,10 +241,10 @@ def cleanUpTweet(tweet):
 
 #Global dictionaries which were used in several functions. We used these dictionaries to 
 #increase the performance 
-tweetIdToParty = {}
-dictPoliticianToParty = createDictionaryPoliticiansToParty()
-dictPartyToNumber = createPartyToNumberDict()
-dictTwitterAccountToRealName = createDictionaryTwitterAcountNameToRealName()
+#tweetIdToParty = {}
+#dictPoliticianToParty = createDictionaryPoliticiansToParty()
+#dictPartyToNumber = createPartyToNumberDict()
+#dictTwitterAccountToRealName = createDictionaryTwitterAcountNameToRealName()
 
-generateFileWithNamePartyTimeAndTweet()
-print("End")
+#generateFileWithNamePartyTimeAndTweet()
+#print("End")

@@ -1,5 +1,5 @@
 import csv
-import Data_Generation
+import Data_Generation.Data_Generation as dg
 import datetime
 from time import sleep
 from selenium.webdriver import Chrome
@@ -30,7 +30,7 @@ def gotoUrl(url, driver):
 def generate_tweet_id(tweet):
     return tweet[2]
 
-def scroll_down_page(driver, last_position, scroll_attempt, num_seconds_to_load=0.9, max_attempts=10):
+def scroll_down_page(driver, last_position, scroll_attempt, num_seconds_to_load=0.2, max_attempts=10):
     """The function will try to scroll down the page and will check the current
     and last positions as an indicator. If the current and last positions are the same after `max_attempts`
     the assumption is that the end of the scroll region has been reached and the `end_of_scroll_region`
@@ -128,7 +128,7 @@ def extract_data_from_current_tweet_card(card):
 def collectTwitterDataForUser(user):
     url = 'https://twitter.com/' + user
     filepath = user + '.csv'
-    save_tweet_data_to_csv(None, filepath, 'w')  # create file for saving records
+    #save_tweet_data_to_csv(None, filepath, 'w')  # create file for saving records
     last_position = None
     end_of_scroll_region = False
     unique_tweets = set()
@@ -149,7 +149,7 @@ def collectTwitterDataForUser(user):
             tweet_id = generate_tweet_id(tweet)
             if tweet_id not in unique_tweets:
                 unique_tweets.add(tweet_id)
-                save_tweet_data_to_csv(tweet, filepath)
+                #save_tweet_data_to_csv(tweet, filepath)
             else:
                 continue
             #indexOfTime = tweet[2].find("T")
@@ -163,7 +163,7 @@ def collectTwitterDataForUser(user):
 
 #collects the data and saves it for all users in our dataset
 def collectTwitterData():
-    userList = getTwitterAccountNames()
+    userList = dg.getTwitterAccountNames()
     for user in userList:
         collectTwitterDataForUser(user)
 
