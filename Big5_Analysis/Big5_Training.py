@@ -13,17 +13,14 @@ from itertools import chain
 import Tweets_Analyzer as ta
 
 
-os.environ["TFHUB_CACHE_DIR"] = "/tmp/model" 
+os.environ["TFHUB_CACHE_DIR"] = "/home/philip/model" 
 os.environ['TFHUB_DOWNLOAD_PROGRESS'] = "1"
 
-#tf.keras.backend.set_floatx('float64')
-tf.config.threading.set_intra_op_parallelism_threads(4) # Model uses 10 CPUs while training. + GPU
+tf.config.threading.set_intra_op_parallelism_threads(8)
 tf.get_logger().setLevel('ERROR')
 # path to csv-file
-#csv_file = 'Big5_Analysis/Data_Generation/essays.csv'
-csv_file = 'Big5_Analysis/Data_Generation/essays_german_to_english.csv'
-#csv_file = 'Big5_Analysis/Data_Generation/test.csv'
-csv_test = 'Big5_Analysis/Data_Generation/essays_test.csv'
+csv_file = 'Big5_Analysis/Data_Generation/essays.csv'
+#csv_file = 'Big5_Analysis/Data_Generation/essays_german_to_english.csv'
 # some csv need encoding
 encoding = "ISO-8859-1"
 # text column
@@ -58,10 +55,6 @@ def loadDatasetFromFile(path):
 
 dataset = loadDatasetFromFile(csv_file)
 
-for line in dataset.take(5):
-  print(f'{line[0].numpy()}') # Notice indexing bc zip!
-  print(line[1])
-
 lenData = len(list(dataset))
 
 dataset = dataset.shuffle(lenData, seed = seed)
@@ -80,14 +73,6 @@ val_ds = raw_val_ds_batched.cache().prefetch(buffer_size=AUTOTUNE)
 raw_test_ds = dataset.skip(val_split)
 raw_test_ds_batched = raw_test_ds.batch(batch_size=batch_size)
 test_ds = raw_test_ds_batched.cache().prefetch(buffer_size=AUTOTUNE)
-
-# save test data as csv for later evaluation
-# probably not the most pythonic way.
-test_list = list(raw_test_ds.as_numpy_iterator())
-test_out = [x[1] for x in test_list]
-test_df = pd.DataFrame(test_out, columns=r_col)
-test_df[t_col] = [t[0] for t in test_list]
-test_df.to_csv(csv_test, index=False)
 
 
 print("Length of datasets: {}".format(len(list(dataset))))
@@ -238,7 +223,7 @@ map_model_to_preprocess = {
 def train_different_variations(epochs):
     models_to_train = ['small_bert/bert_en_uncased_L-8_H-512_A-8', 'small_bert/bert_en_uncased_L-4_H-512_A-8']
     for model_name in models_to_train:
-        path_for_saving = 'Big5_Analysis/Model_double_translated/' + model_name[11:] + '/'
+        path_for_saving = 'Big5_Analysis/Model_Good/' + model_name[11:] + '/'
         checkpoint_path = path_for_saving + 'Checkpoints/cp-{epoch:01d}.ckpt'
         log_dir = path_for_saving + 'Logs/'
         model = build_model(model_name)
@@ -376,6 +361,12 @@ def loadModel(model_path):
     reloaded_model = compileModel(reloaded_model)
     return reloaded_model
 
+def loadModelFromCheckpoint(model_path, bert_model_name):
+    model = build_model(bert_model_name)
+    latest = tf.train.latest_checkpoint(model_path+ '/Checkpoints/')
+    model.load_weights(latest)
+    return model
+
 def print_my_examples(inputs, results):
   result_for_printing = \
     [f'input: {inputs[i]:<30} : EXP: {results[i][0]:.6f} : NEU: {results[i][1]:.6f} : ARG: {results[i][2]:.6f} : CON: {results[i][3]:.6f} : OPN: {results[i][4]:.6f}'
@@ -410,16 +401,12 @@ def testModel(model_path):
     test_ds = getTestDataset()
     loss, accuracy = model.evaluate(test_ds) 
     print("Accuracy " + str(accuracy))
-    #model.summary()
-    #results = model(tf.constant(examples))
-    #print_my_examples(examples, results)
-
-
 
 #train_different_variations(epochs)
 testModel('Big5_Analysis/Model_double_translated/bert_en_uncased_L-8_H-512_A-8')
+#testModel('Big5_Analysis/Model/bert_en_uncased_L-8_H-512_A-8')
+
 #model = loadModel('Big5_Analysis/Model_double_translated/bert_en_uncased_L-8_H-512_A-8')
 #tweetsWithOutput = ta.evaluateAllTweets(model)
-
 #ta.big5percentagePerParty(tweetsWithOutput)
 #ta.big5percentagePerName(tweetsWithOutput)
