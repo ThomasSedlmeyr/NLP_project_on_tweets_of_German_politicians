@@ -1,4 +1,3 @@
-Description of our project:
 This project is about the analysis of tweets from politicians who are members of the German Bundestag.
 
 As a first step, we created a database containing more than 200k tweets by over 500 German politicians from different parties.
