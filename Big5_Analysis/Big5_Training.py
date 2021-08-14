@@ -379,13 +379,13 @@ def testModel(model_path):
     model = loadModel(model_path)
     model.summary()
     test_ds = getTestDataset()
-    loss, accuracy = model.evaluate(val_ds) 
+    loss, accuracy = model.evaluate(test_ds) 
     print("Accuracy " + str(accuracy))
 
 
 #train_different_variations(epochs)
 #testModel('Big5_Analysis/Model_double_translated/bert_en_uncased_L-8_H-512_A-8')
-#testModel('Big5_Analysis/Model/bert_en_uncased_L-8_H-512_A-8')
+testModel('Big5_Analysis/Model/bert_en_uncased_L-8_H-512_A-8')
 
 #model = loadModel('Big5_Analysis/Model_double_translated/bert_en_uncased_L-8_H-512_A-8')
 #tweetsWithOutput = ta.evaluateAllTweets(model)

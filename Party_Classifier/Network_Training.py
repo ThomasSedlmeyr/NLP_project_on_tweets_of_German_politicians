@@ -16,6 +16,8 @@ from tensorflow.keras.layers.experimental.preprocessing import TextVectorization
 
 #code adapted from prof. simon hegelich, https://www.professoren.tum.de/hegelich-simon
 
+parties = ['CDU', 'LINKE', 'FDP', 'GRÜNE','SPD', 'CSU', 'AFD']
+
 tf.config.threading.set_intra_op_parallelism_threads(6)
 
 pathToData = "Party_Classifier/Data_Generation/"
@@ -198,8 +200,9 @@ def evaluate():
   plt.ylabel('True label')
   plt.xlabel('Predicted label')
   plt.show()
-  evaluateLKR(export_model)
+  #evaluateLKR(export_model)
 
+#evaluates the tweets of the lkr party
 def evaluateLKR(export_model):
   result = export_model.predict(lkrTweets)
   sum = np.zeros(len(parties))
@@ -214,9 +217,7 @@ def evaluateLKR(export_model):
   #[0.18223546 0.12500428 0.18392617 0.1105402  0.20657062 0.02684399 0.19835847]
  
 
-parties = ['CDU', 'LINKE', 'FDP', 'GRÜNE','SPD', 'CSU', 'AFD']
 #hyperTrain()
 #trainBestHyperParameters()
 #train()
 evaluate()
-
