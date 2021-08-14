@@ -3,7 +3,7 @@ import numpy as np
 import csv
 from operator import itemgetter
 
-#This module contains all the methods which were use to create the traindataset 
+#This module contains all the methods which were use to create the training dataset 
 
 #Creates a dictionary which returns for every politician its party
 def createDictionaryPoliticiansToParty():
@@ -214,6 +214,7 @@ def generateFileWithNamePartyTimeAndTweet():
             f.write(time + " " + tweet)
             f.write('\n')
 
+#creates dictionary which maps every twitter account name to its real name
 def createDictionaryTwitterAcountNameToRealName():
     accountsNamesParties = readMdBcsvFile()    
     keys = []
@@ -226,25 +227,38 @@ def createDictionaryTwitterAcountNameToRealName():
     return dictionary
 
 def cleanUpTweet(tweet):
-    #Remove \n \r
-    #tweet = tweet.rstrip()
+    #Remove \n \r \t
     tweet = tweet.replace('\r', '')
     tweet = tweet.replace('\n', '')
     tweet = tweet.replace('\t', '')
-    #Remove all characters after @ till next " "
-    #indexAt = tweet.index("@")
-    #indexSpace = tweet.index(" ", indexAt+1)
-    #firstPart = tweet[:indexAt]
-    #secondPart = tweet[indexSpace:]
-    #tweet = firstPart + secondPart
     return tweet   
+
+#Reads the dataset of German and English Tedtalk sentences and saves the data as numpy array
+def createEnglishGermanSentenceDataSet():
+    dataSet = []
+    germanSentence = ""
+    englishSentence = ""
+    isGerman = False
+    counter = 1
+    with open("Dataset_TED_English_German.txt.") as file:
+        for line in file:
+            #An empty line indicates a new pair of English and German sentences 
+            if(line == "\n"):
+                dataSet.append([englishSentence, germanSentence])
+            elif(isGerman):
+                germanSentence = line
+                isGerman = False
+            else: 
+                englishSentence = line
+                isGerman = True
+
+    numpyArray = np.array(dataSet)
+    np.save("Dataset_TED_English_German", numpyArray)
+    print("DataSet was created!")
+
 
 #Global dictionaries which were used in several functions. We used these dictionaries to 
 #increase the performance 
-#tweetIdToParty = {}
-#dictPoliticianToParty = createDictionaryPoliticiansToParty()
-#dictPartyToNumber = createPartyToNumberDict()
-#dictTwitterAccountToRealName = createDictionaryTwitterAcountNameToRealName()
-
-#generateFileWithNamePartyTimeAndTweet()
-#print("End")
+dictPoliticianToParty = createDictionaryPoliticiansToParty()
+dictPartyToNumber = createPartyToNumberDict()
+dictTwitterAccountToRealName = createDictionaryTwitterAcountNameToRealName()

@@ -12,15 +12,16 @@ import matplotlib.pyplot as plt
 from itertools import chain
 import Tweets_Analyzer as ta
 
-
+#path to downloaded BERT models
 os.environ["TFHUB_CACHE_DIR"] = "/home/philip/model" 
 os.environ['TFHUB_DOWNLOAD_PROGRESS'] = "1"
 
 tf.config.threading.set_intra_op_parallelism_threads(8)
 tf.get_logger().setLevel('ERROR')
-# path to csv-file
-csv_file = 'Big5_Analysis/Data_Generation/essays.csv'
-#csv_file = 'Big5_Analysis/Data_Generation/essays_german_to_english.csv'
+# path to csv-file for training
+#csv_file = 'Big5_Analysis/Data_Generation/essays.csv'
+csv_file = 'Big5_Analysis/Data_Generation/essays_german_to_english.csv'
+
 # some csv need encoding
 encoding = "ISO-8859-1"
 # text column
@@ -32,17 +33,13 @@ r_col = ['cEXT','cNEU','cAGR','cCON','cOPN']
 train_per = 80
 val_per = 15
 
-# retrain existing model (only if there is one saved)
-retrain = False
-
 #  model parameters
 AUTOTUNE = tf.data.AUTOTUNE
-#batch_size = 32
 batch_size = 8
 seed = 42
-
 epochs = 30
 
+#loads csv file from path and returns tf Dataset
 def loadDatasetFromFile(path):
     dataframe = pd.read_csv(path, encoding=encoding, error_bad_lines=False)
     texts = dataframe.pop(t_col)
@@ -60,7 +57,7 @@ lenData = len(list(dataset))
 dataset = dataset.shuffle(lenData, seed = seed)
 train_split = lenData//100*train_per
 val_split = lenData//100*(train_per + val_per)
-print(val_split)
+
 raw_train_ds = dataset.take(train_split)
 raw_train_ds_batched = raw_train_ds.batch(batch_size=batch_size)
 train_ds = raw_train_ds_batched.cache().prefetch(buffer_size=AUTOTUNE)
@@ -221,29 +218,25 @@ map_model_to_preprocess = {
 
 #method for training different bert models and saving the result
 def train_different_variations(epochs):
+    #list of models to use for training
     models_to_train = ['small_bert/bert_en_uncased_L-8_H-512_A-8', 'small_bert/bert_en_uncased_L-4_H-512_A-8']
     for model_name in models_to_train:
         path_for_saving = 'Big5_Analysis/Model_Good/' + model_name[11:] + '/'
         checkpoint_path = path_for_saving + 'Checkpoints/cp-{epoch:01d}.ckpt'
+        #path for tensorboard
         log_dir = path_for_saving + 'Logs/'
         model = build_model(model_name)
         model.save_weights(checkpoint_path.format(epoch=0))
         train(model, epochs, path_for_saving, checkpoint_path, log_dir)
 
-# initializer = tf.keras.initializers.LecunNormal()
 def build_model(bert_model_name):
-
     tfhub_handle_encoder = map_name_to_handle[bert_model_name]
     tfhub_handle_preprocess = map_model_to_preprocess[bert_model_name]
-
     print(f'BERT model selected           : {tfhub_handle_encoder}')
     print(f'Preprocess model auto-selected: {tfhub_handle_preprocess}')
-
     bert_preprocess_model = hub.KerasLayer(tfhub_handle_preprocess)
-
     text_test = ['this is such an amazing movie!']
     text_preprocessed = bert_preprocess_model(text_test)
-
     print(f'Keys       : {list(text_preprocessed.keys())}')
     print(f'Shape      : {text_preprocessed["input_word_ids"].shape}')
     print(f'Word Ids   : {text_preprocessed["input_word_ids"][0, :12]}')
@@ -251,7 +244,6 @@ def build_model(bert_model_name):
     print(f'Type Ids   : {text_preprocessed["input_type_ids"][0, :12]}')
 
     bert_model = hub.KerasLayer(tfhub_handle_encoder)
-
     bert_results = bert_model(text_preprocessed)
 
     print(f'Loaded BERT: {tfhub_handle_encoder}')
@@ -259,7 +251,6 @@ def build_model(bert_model_name):
     print(f'Pooled Outputs Values:{bert_results["pooled_output"][0, :12]}')
     print(f'Sequence Outputs Shape:{bert_results["sequence_output"].shape}')
     print(f'Sequence Outputs Values:{bert_results["sequence_output"][0, :12]}')  
-
 
     text_input = tf.keras.layers.Input(shape=(), dtype=tf.string, name='text')
     preprocessing_layer = hub.KerasLayer(tfhub_handle_preprocess, name='preprocessing')
@@ -291,9 +282,11 @@ def compileModel(model):
                             metrics=metrics)
     return model
 
-
+#trains the given model for number of epochs given
+#saves checkpoints to checkpoint_path every epoch
+#saves final model to path_for_saving after training
+#saves logs for tensorboard in log_dir
 def train(model, epochs, path_for_saving, checkpoint_path, log_dir):
-
     cp_callback = tf.keras.callbacks.ModelCheckpoint(
         filepath=checkpoint_path,
         verbose=1,
@@ -303,6 +296,7 @@ def train(model, epochs, path_for_saving, checkpoint_path, log_dir):
         save_best_only=True,
         monitor = 'val_loss')
 
+    #stops the training if validation_loss doesn't improve for 5 epochs in a row
     earlystop_callback = tf.keras.callbacks.EarlyStopping(
     monitor='val_loss', 
     patience=5)
@@ -314,13 +308,11 @@ def train(model, epochs, path_for_saving, checkpoint_path, log_dir):
                         epochs=epochs)
 
     loss, accuracy = model.evaluate(test_ds)
-
     model.save(path_for_saving)
-    f = open(path_for_saving + 'acc.txt', "a+")
-    f.write(str(accuracy))
     print(f'Loss: {loss}')
     print(f'Accuracy: {accuracy}')
-    #testModel(path_for_saving)
+
+
 
 def plot_result(history):
     history_dict = history.history
@@ -336,15 +328,11 @@ def plot_result(history):
     fig.tight_layout()
 
     plt.subplot(2, 1, 1)
-    # "bo" is for "blue dot"
     plt.plot(epochs, loss, 'r', label='Training loss')
-    # b is for "solid blue line"
     plt.plot(epochs, val_loss, 'b', label='Validation loss')
     plt.title('Training and validation loss')
-    # plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()
-
 
     plt.subplot(2, 1, 2)
     plt.plot(epochs, acc, 'r', label='Training acc')
@@ -356,54 +344,47 @@ def plot_result(history):
     plt.savefig("Plot1.png")
 
 
+#loads model from given path, compiles and returns it
 def loadModel(model_path):
     reloaded_model = tf.keras.models.load_model(model_path, compile=False)
     reloaded_model = compileModel(reloaded_model)
     return reloaded_model
 
+#loads model from given path, needs bert_model_name to build correct model
 def loadModelFromCheckpoint(model_path, bert_model_name):
     model = build_model(bert_model_name)
     latest = tf.train.latest_checkpoint(model_path+ '/Checkpoints/')
     model.load_weights(latest)
     return model
 
-def print_my_examples(inputs, results):
-  result_for_printing = \
-    [f'input: {inputs[i]:<30} : EXP: {results[i][0]:.6f} : NEU: {results[i][1]:.6f} : ARG: {results[i][2]:.6f} : CON: {results[i][3]:.6f} : OPN: {results[i][4]:.6f}'
-                         for i in range(len(inputs))]
-  print(*result_for_printing, sep='\n')
-  print()
 
-examples = [
-    'this is such an amazing movie!',  # this is the same sentence tried earlier
-    'The movie was great!',
-    'The movie was meh.',
-    'The movie was okish.',
-    'The movie was terrible...',
-    'I went to a party and talked to everybody the whole night.',
-    'I always feel uncomfortable around other people.'
-]
-
-
+#loads test dataset 
+# important to use same seed every time
 def getTestDataset():
+    #loads the retranslated dataset
     dataset = loadDatasetFromFile('Big5_Analysis/Data_Generation/essays_german_to_english.csv')
+    #loads the original dataset
+    #dataset = loadDatasetFromFile('Big5_Analysis/Data_Generation/essays.csv')
     lenData = len(list(dataset))
     dataset = dataset.shuffle(lenData, seed = seed)
     val_split = lenData//100*(train_per + val_per)
-    print(val_split)
+
     raw_test_ds = dataset.skip(val_split)
     raw_test_ds_batched = raw_test_ds.batch(batch_size=batch_size)
     test_ds = raw_test_ds_batched.cache().prefetch(buffer_size=AUTOTUNE)
     return test_ds
 
+#loads model from given path and evaluates it with test dataset
 def testModel(model_path):
     model = loadModel(model_path)
+    model.summary()
     test_ds = getTestDataset()
-    loss, accuracy = model.evaluate(test_ds) 
+    loss, accuracy = model.evaluate(val_ds) 
     print("Accuracy " + str(accuracy))
 
+
 #train_different_variations(epochs)
-testModel('Big5_Analysis/Model_double_translated/bert_en_uncased_L-8_H-512_A-8')
+#testModel('Big5_Analysis/Model_double_translated/bert_en_uncased_L-8_H-512_A-8')
 #testModel('Big5_Analysis/Model/bert_en_uncased_L-8_H-512_A-8')
 
 #model = loadModel('Big5_Analysis/Model_double_translated/bert_en_uncased_L-8_H-512_A-8')

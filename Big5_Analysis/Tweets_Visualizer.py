@@ -6,11 +6,14 @@ import seaborn as sns
 import Tweets_Analyzer as ta
 import matplotlib.pyplot as plt
 
+#loads numpy array with tuples: 
+#(time, name, party, model prediction)
 def readTweets():
     return np.load('Big5_Analysis/tweetsWithOutput.npy', allow_pickle=True)
 
-def plot(title, path, xData, yData, palette, rotate):
-    ax = sns.barplot(x=xData, y=yData)
+#
+def boxPlot(title, path, xData, yData, palette, rotate): 
+    ax = sns.boxplot(x=[1,2,3], y=yData)
     if rotate:
         plt.xticks(rotation=90, fontsize=12)
     if palette != None:
@@ -20,7 +23,22 @@ def plot(title, path, xData, yData, palette, rotate):
     plt.savefig(path)
     plt.clf()
 
+#creates barplot for given x and y data and saves it in path
+def plot(title, path, xData, yData, palette, rotate):
+    ax = sns.barplot(x=xData, y=yData)
+    if rotate:
+        #rotate x labels by 90 degrees
+        plt.xticks(rotation=90, fontsize=12)
+    if palette != None:
+        #change color of bars to match given palette
+        sns.set_palette(palette)
+    plt.title(title)
+    plt.tight_layout()
+    plt.savefig(path)
+    plt.clf()
 
+
+#returns only pairs of label and value where the value differs more than threshhold from the mean
 def calculateOutliers(values, labels, threshhold):
     average = sum(values) / len(values)
     resultValues = []
@@ -33,6 +51,7 @@ def calculateOutliers(values, labels, threshhold):
     return (resultValues, resultLabels)
 
 
+#creates barplots for each of the big5 categories for politicians predicted mean values are outliers
 def visualizeEachPolitician(tweetsData):
     tweetsData = list(tweetsData)
     big5percentagePerParty = ta.big5percentagePerPolitician(tweetsData, 500)
@@ -43,8 +62,8 @@ def visualizeEachPolitician(tweetsData):
     neuroticism = []
     politicianNames = []
 
-
-    #,cEXT,cNEU,cAGR,cCON,cOPN
+    #The order of big5 traits is:
+    #Extraversion,Neuroticism,Agreeableness,Conscientiousness,Openness
     for entry in big5percentagePerParty:
         extraversion.append(entry[1][0])
         agreeableness.append(entry[1][2])
@@ -69,12 +88,8 @@ def visualizeEachPolitician(tweetsData):
     plot("Neuroticism", "Big5_Analysis/Visualized_data/Politicians_Neuroticism.png", filteredNames, neuroticism, None, True)
 
 
+#creates barplots for each of the big5 categories for the mean values of every party
 def visualizeBig5PerParty(tweetsData):
-    #extraversion (outgoing/energetic vs. solitary/reserved)
-    #agreeableness (friendly/compassionate vs. critical/rational)
-    #openness to experience (inventive/curious vs. consistent/cautious)
-    #conscientiousness (efficient/organized vs. extravagant/careless)
-    #neuroticism (sensitive/nervous vs. resilient/confident)
     big5percentagePerParty = ta.big5percentagePerParty(tweetsData)
     extraversion = []
     agreeableness = []
@@ -82,7 +97,6 @@ def visualizeBig5PerParty(tweetsData):
     conscientiousness = []
     neuroticism = []
     parties = []
-        #,cEXT,cNEU,cAGR,cCON,cOPN
     for entry in big5percentagePerParty:
         extraversion.append(entry[1][0])
         agreeableness.append(entry[1][2])
@@ -90,29 +104,60 @@ def visualizeBig5PerParty(tweetsData):
         conscientiousness.append(entry[1][3])
         neuroticism.append(entry[1][1])
         parties.append(entry[0])
+        
+    #use colors to match the parties
     colors = ["blue", "black", "black", "yellow", "green", "violet", "red"] 
     customPalette = sns.color_palette(colors)
     sns.set_theme(style="whitegrid")
     plot("Extraversion", "Big5_Analysis/Visualized_data/Parties_Extraversion.png", parties, extraversion, customPalette, False)
     plot("Extraversion", "Big5_Analysis/Visualized_data/Parties_Extraversion.png", parties, extraversion, customPalette, False)
-    #plt.show()
     plot("Agreeableness", "Big5_Analysis/Visualized_data/Parties_Agreeableness.png", parties, agreeableness, customPalette, False)
-    #plt.show()
     plot("Openness", "Big5_Analysis/Visualized_data/Parties_Openness.png", parties, openness, customPalette, False)
-    #plt.show()
     plot("Conscientiousness", "Big5_Analysis/Visualized_data/Parties_Conscientiousness.png", parties, conscientiousness, customPalette, False)
-    #plt.show()
     plot("Neuroticism", "Big5_Analysis/Visualized_data/Parties_Neuroticism.png", parties, neuroticism, customPalette, False)
-    #plt.show()
-    #sns.palplot(customPalette)
-    #plt.show()
+
+def visualizeBig5PerPartyBoxPlot(tweetsData):
+    (parties, big5valuesPerParty) = ta.big5valuesPerParty(tweetsData)
+    extraversion = []
+    agreeableness = []
+    openness = []
+    conscientiousness = []
+    neuroticism = []
+        #,cEXT,cNEU,cAGR,cCON,cOPN
+    for i in range(0, len(big5valuesPerParty)):
+        extraversion.append([])
+        agreeableness.append([])
+        openness.append([])
+        neuroticism.append([])
+        conscientiousness.append([])
+        for j in range(0, len(big5valuesPerParty[i])):
+            extraversion[i].append(big5valuesPerParty[i][j][0])
+            agreeableness.append(big5valuesPerParty[i][j][2])
+            openness.append(big5valuesPerParty[i][j][4])
+            conscientiousness.append(big5valuesPerParty[i][j][3])
+            neuroticism.append(big5valuesPerParty[i][j][1])
+
+    colors = ["blue", "black", "black", "yellow", "green", "violet", "red"] 
+    customPalette = sns.color_palette(colors)
+    sns.set_theme(style="whitegrid")
+    boxPlot("Extraversion", "Big5_Analysis/Visualized_data/Parties_Extraversion_AfD.png", parties[0], extraversion[0], customPalette, False)
+    boxPlot("Extraversion", "Big5_Analysis/Visualized_data/Parties_Extraversion.png", parties, extraversion, customPalette, False)
+    boxPlot("Agreeableness", "Big5_Analysis/Visualized_data/Parties_Agreeableness.png", parties, agreeableness, customPalette, False)
+    boxPlot("Openness", "Big5_Analysis/Visualized_data/Parties_Openness.png", parties, openness, customPalette, False)
+    boxPlot("Conscientiousness", "Big5_Analysis/Visualized_data/Parties_Conscientiousness.png", parties, conscientiousness, customPalette, False)
+    boxPlot("Neuroticism", "Big5_Analysis/Visualized_data/Parties_Neuroticism.png", parties, neuroticism, customPalette, False)
+
+def calculateStdDeviation(tweetsData):
+    (parties, valuesPerParty) = ta.big5valuesPerParty(tweetsData)
+    for i in range(0, len(valuesPerParty)):
+        extr = np.transpose(valuesPerParty[i])
+        std_dev = np.std(extr[4])
+        print(parties[i] + " " + str(std_dev))
+
 
 tweetsData = readTweets()
-visualizeBig5PerParty(tweetsData)
 visualizeEachPolitician(tweetsData)
-#tweets = readTweets()
-#evaluateAllTweets(None)
-#print("Finished")
+visualizeBig5PerParty(tweetsData)
 
 
     

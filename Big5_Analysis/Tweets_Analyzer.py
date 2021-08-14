@@ -3,6 +3,8 @@ from operator import itemgetter
 import numpy as np
 import timestring   
 
+#reads all translated tweets
+#returns list of tuples with (time, name, party and text) for every tweet
 def readTweets():
     tweets = []
     partyOfPolitician = ""
@@ -10,7 +12,7 @@ def readTweets():
     with open('Big5_Analysis/Data_Generation/Name_Party_Time_Tweet_translated_complete.txt') as f:
         line = f.readline()
         while line:
-            #if a new politician 
+            #if there is a new politician
             if(line.find("------") == 0):
                 line = f.readline()
                 politicianName = line[:-1]
@@ -39,10 +41,13 @@ def parseOneLine(line):
         return None
     return (time, tweetText)
 
+#loads all translated tweets
+#predicts out for them with given model
+#saves result as numpy array containing
+#(time, name, party, model prediction)
 def evaluateAllTweets(model):
     tweets = readTweets()
     tweetsText = [x[3] for x in tweets]
-    #print(tweetsText)
     print("Prediction startet")
     outputs = model.predict(tweetsText)
     print("Prediction finished")
@@ -52,13 +57,34 @@ def evaluateAllTweets(model):
     np.save('Big5_Analysis/tweetsWithOutput.npy', np.array(tweetsWithOutputs))
     return tweetsWithOutputs
 
-
-def big5percentagePerParty(tweetsWithOutput):
+#groups given numpy array by parties
+def groupResultsByParties(tweetsWithOutput):
     tweetsList = list(tweetsWithOutput)
     tweetsList.sort(key=itemgetter(2))
     groupedListByParty = [list(group) for key, group in groupby(tweetsList, itemgetter(2))]
-    #it = groupby(tweetsWithOutput, itemgetter(2))
-    #it = list(it)
+    return groupedListByParty
+
+def groupResultsByPoliticians(tweetsWithOutput):
+    tweetsWithOutput.sort(key=itemgetter(1))
+    groupedListByPolitician = [list(group) for key, group in groupby(tweetsWithOutput, itemgetter(1))]
+    return groupedListByPolitician
+
+#returns model predictions for all tweets grouped by parties
+def big5valuesPerParties(tweetsWithOutput):
+    #sort by party name, is necessary for grouping later
+    groupedListByParty = groupResultsByParties(tweetsWithOutput)
+    result = []
+    parties = []
+    #group by party name
+    for outputsOfOneParty in groupedListByParty:
+        values = [x[3] for x in outputsOfOneParty]
+        parties.append(outputsOfOneParty[0][2])
+        result.append(values)
+    return (parties, result)
+
+#returns average model prediction grouped by parties
+def big5percentagePerParty(tweetsWithOutput):
+    groupedListByParty = groupResultsByParties(tweetsWithOutput)
     resultList = []
     for outputsOfOneParty in groupedListByParty:
         values = [x[3] for x in outputsOfOneParty]
@@ -67,16 +93,16 @@ def big5percentagePerParty(tweetsWithOutput):
         resultOfOneParty = (outputsOfOneParty[0][2], percentage) 
         resultList.append(resultOfOneParty)
     #print("['CDU', 'LINKE', 'FDP', 'GRÜNE','SPD', 'CSU', 'AFD']")
-    #,cEXT,cNEU,cAGR,cCON,cOPN
-    print(resultList)
+    #The order of big5 traits is:
+    #Extraversion,Neuroticism,Agreeableness,Conscientiousness,Openness
+    #print(resultList)
     return resultList
     
+
+#returns average model prediction grouped by politicians
+#only uses politicians with more tweets than threshhold
 def big5percentagePerPolitician(tweetsWithOutput, threshhold):
-    #sort by name of the politician
-    tweetsWithOutput.sort(key=itemgetter(1))
-    groupedListByPolitician = [list(group) for key, group in groupby(tweetsWithOutput, itemgetter(1))]
-    #it = groupby(tweetsWithOutput, itemgetter(2))
-    #it = list(it)
+    groupedListByPolitician = groupResultsByPoliticians(tweetsWithOutput)
     resultList = []
     for outputsOfOnePolitician in groupedListByPolitician:
         if len(outputsOfOnePolitician) > threshhold:
@@ -86,12 +112,6 @@ def big5percentagePerPolitician(tweetsWithOutput, threshhold):
             resultOfOnePolitician = (outputsOfOnePolitician[0][1], percentage) 
             resultList.append(resultOfOnePolitician)
     #print("['CDU', 'LINKE', 'FDP', 'GRÜNE','SPD', 'CSU', 'AFD']")
-    #,cEXT,cNEU,cAGR,cCON,cOPN
-    print(resultList)
+    #print(resultList)
     return resultList
-
-
     
-#tweets = readTweets()
-#evaluateAllTweets(None)
-#print("Finished")

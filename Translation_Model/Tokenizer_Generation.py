@@ -8,10 +8,12 @@ import tempfile
 import time
 import numpy as np
 import matplotlib.pyplot as plt
-
+from tensorflow_text.tools.wordpiece_vocab import bert_vocab_from_dataset as bert_vocab
 import tensorflow_datasets as tfds
 import tensorflow_text as text
 import tensorflow as tf
+
+#adapted from: https://www.tensorflow.org/text/guide/subwords_tokenizer
 
 tf.get_logger().setLevel('ERROR')
 pwd = pathlib.Path.cwd()
@@ -45,19 +47,11 @@ def createEnglishGermanSentenceDataSet():
     raw_test_ds = tf.data.Dataset.from_tensor_slices(((transposed[0][valIndex:]), ((transposed[1][valIndex:]))))
     return (raw_train_ds, raw_val_ds)
 
-#examples, metadata = tfds.load('ted_hrlr_translate/pt_to_en', with_info=True,
-                               ##as_supervised=True)
 (train_examples, val_examples) = createEnglishGermanSentenceDataSet()
-
-
-for en, de in train_examples.take(1):
-  print("English: ", en.numpy().decode('utf-8'))
-  print("German:   ", de.numpy().decode('utf-8'))
 
 train_de = train_examples.map(lambda en, de: de)
 train_en = train_examples.map(lambda en, de: en)
 
-from tensorflow_text.tools.wordpiece_vocab import bert_vocab_from_dataset as bert_vocab
 
 bert_tokenizer_params=dict(lower_case=True)
 reserved_tokens=["[PAD]", "[UNK]", "[START]", "[END]"]
@@ -73,17 +67,10 @@ bert_vocab_args = dict(
     learn_params={},
 )
 
-
-
 en_vocab = bert_vocab.bert_vocab_from_dataset(
     train_en.batch(1000).prefetch(2),
     **bert_vocab_args
 )
-
-print(en_vocab[:10])
-print(en_vocab[100:110])
-print(en_vocab[1000:1010])
-print(en_vocab[-10:])
 
 
 def write_vocab_file(filepath, vocab):
@@ -99,28 +86,15 @@ de_vocab = bert_vocab.bert_vocab_from_dataset(
     **bert_vocab_args
 )
 
-print(de_vocab[:10])
-print(de_vocab[100:110])
-print(de_vocab[1000:1010])
-print(de_vocab[-10:])
-
 write_vocab_file('de_vocab.txt', de_vocab)
-
 
 en_tokenizer = text.BertTokenizer('en_vocab.txt', **bert_tokenizer_params)
 de_tokenizer = text.BertTokenizer('de_vocab.txt', **bert_tokenizer_params)
-
-for en_examples, de_examples in train_examples.batch(3).take(1):
-  for ex in de_examples:
-    print(ex.numpy())
 
 # Tokenize the examples -> (batch, word, word-piece)
 token_batch = de_tokenizer.tokenize(de_examples)
 # Merge the word and word-piece axes -> (batch, tokens)
 token_batch = token_batch.merge_dims(-2,-1)
-
-for ex in token_batch.to_list():
-  print(ex)
 
 # Lookup each token id in the vocabulary.
 txt_tokens = tf.gather(de_vocab, token_batch)
@@ -154,16 +128,6 @@ def cleanup_text(reserved_tokens, token_txt):
   result = tf.strings.reduce_join(result, separator=' ', axis=-1)
 
   return result
-
-de_examples.numpy()
-
-
-token_batch = de_tokenizer.tokenize(en_examples).merge_dims(-2,-1)
-words = de_tokenizer.detokenize(token_batch)
-words
-
-cleanup_text(reserved_tokens, words).numpy()
-
 
 class CustomTokenizer(tf.Module):
   def __init__(self, reserved_tokens, vocab_path):
@@ -227,28 +191,10 @@ class CustomTokenizer(tf.Module):
   def get_reserved_tokens(self):
     return tf.constant(self._reserved_tokens)
 
-
+#creates english and german tokenizer using the given vocab files
 tokenizers = tf.Module()
 tokenizers.en = CustomTokenizer(reserved_tokens, 'en_vocab.txt')
 tokenizers.de = CustomTokenizer(reserved_tokens, 'de_vocab.txt')
 
 model_name = 'testModel'
 tf.saved_model.save(tokenizers, model_name)
-
-reloaded_tokenizers = tf.saved_model.load(model_name)
-reloaded_tokenizers.en.get_vocab_size().numpy()
-
-tokens = reloaded_tokenizers.de.tokenize(['Hello TensorFlow!'])
-tokens.numpy()
-
-text_tokens = reloaded_tokenizers.de.lookup(tokens)
-text_tokens
-
-round_trip = reloaded_tokenizers.de.detokenize(tokens)
-
-print(round_trip.numpy()[0].decode('utf-8'))
-
-
-
-
-

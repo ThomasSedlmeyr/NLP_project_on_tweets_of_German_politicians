@@ -8,16 +8,15 @@ import numpy as np
 import datetime
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+import keras_tuner as kt
 from tensorflow.keras import layers
 from tensorflow.keras import losses
 from tensorflow.keras import preprocessing
 from tensorflow.keras.layers.experimental.preprocessing import TextVectorization
 
-tf.config.threading.set_intra_op_parallelism_threads(6) # Model uses 6 CPUs while training. + GPU
+#code adapted from prof. simon hegelich, https://www.professoren.tum.de/hegelich-simon
 
-import keras_tuner as kt
-
+tf.config.threading.set_intra_op_parallelism_threads(6)
 
 pathToData = "Party_Classifier/Data_Generation/"
 checkpoint_path = "Party_Classifier/Model/Checkpoints/Keras_Tuner/cp-{epoch:04d}.ckpt"
@@ -27,11 +26,9 @@ batch_size = 32
 sequence_length = 250
 epochs = 100
 
-
 trainNp = np.load(pathToData + 'Train.npy', allow_pickle=True)
 valNp = np.load(pathToData + 'Val.npy', allow_pickle=True)
 testNp = np.load(pathToData + 'Test.npy', allow_pickle=True)
-
 
 raw_train_ds = tf.data.Dataset.from_tensor_slices((list(trainNp[0]), list(trainNp[1])))
 raw_val_ds = tf.data.Dataset.from_tensor_slices((list(valNp[0]), list(valNp[1])))
@@ -100,12 +97,13 @@ def model_builder(hp):
   tf.keras.layers.Embedding(max_features + 1, embedding_dim),
   tf.keras.layers.Dropout(0.2),
   tf.keras.layers.GlobalAveragePooling1D()])
+  #setting the parameters for the keras tuner
   hp_units = hp.Int('units', min_value=500, max_value=20000, step=1000)
+  hp_learning_rate = hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4,1e-5])
+
   model.add(tf.keras.layers.Dense(units=hp_units, activation='relu'))
   model.add(tf.keras.layers.Dropout(0.2))
   model.add(tf.keras.layers.Dense(7, activation='sigmoid'))
-
-  hp_learning_rate = hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4,1e-5])
 
   model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=hp_learning_rate),
                 loss='binary_crossentropy',
@@ -113,6 +111,7 @@ def model_builder(hp):
 
   return model
 
+#loads the best model from checkpoint
 def buildBestModel():
   tuner = kt.Hyperband(model_builder,
                      objective='val_accuracy',
@@ -121,11 +120,13 @@ def buildBestModel():
                      directory='Party_Classifier/hyperParams_opt',
                      project_name='PartyClassifier')
   best_hps=tuner.get_best_hyperparameters(num_trials=1)[0]
+  print(best_hps.get('learning_rate'))
   model = tuner.hypermodel.build(best_hps)
   latest = tf.train.latest_checkpoint(checkpoint_dir)
   model.load_weights(latest)
   return model
 
+#uses the keras tuner to find the best hyperparameters
 def hyperTrain():
   tuner = kt.Hyperband(model_builder,
                      objective='val_accuracy',
@@ -146,6 +147,7 @@ def hyperTrain():
   is {best_hps.get('learning_rate')}.
   """)
 
+#trains model with hyperparameters found by keras tuner
 def train():
   model = buildBestModel()
   model.summary()
@@ -160,8 +162,10 @@ def train():
   print("Accuracy: ", accuracy)
 
 
+#evaluates the model and builds the confusion matrix
 def evaluate():
   model = buildBestModel()
+  model.summary()
   export_model = tf.keras.Sequential([
     vectorize_layer,
     model
@@ -194,8 +198,6 @@ def evaluate():
   plt.ylabel('True label')
   plt.xlabel('Predicted label')
   plt.show()
-  print(len(wrongClassifications))
-  testTransposed = np.transpose(testNp)
   evaluateLKR(export_model)
 
 def evaluateLKR(export_model):

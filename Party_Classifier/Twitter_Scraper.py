@@ -152,11 +152,6 @@ def collectTwitterDataForUser(user):
                 #save_tweet_data_to_csv(tweet, filepath)
             else:
                 continue
-            #indexOfTime = tweet[2].find("T")
-            #dateArr = tweet[2][:indexOfTime].split("-")
-            #date = datetime.datetime(int(dateArr[0]), int(dateArr[1]), int(dateArr[2]))
-            #if(date < minDate):
-                #return
         last_position, end_of_scroll_region = scroll_down_page(driver, last_position, 0)
     driver.quit()
 
