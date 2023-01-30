@@ -1,5 +1,7 @@
 This project is about the analysis of tweets from politicians who are members of the German Bundestag.
 
+If you are interested what we did, watch our YouTube video: https://www.youtube.com/watch?v=mL7wLmq8KKk
+
 As a first step, we created a database containing more than 240k tweets by over 500 German politicians from different parties.
 
 We then trained a Keras model, which uses a political tweet as input and predicts to which party (CDU, LINKE, FDP, GRÜNE, SPD, CSU, AfD) the creator of the tweet belongs to. We reached an accuracy of more than 55% on our dataset using this model.
